@@ -11,12 +11,13 @@ public class ControllerTank : MonoBehaviour {
         Vector3 Poze = TankEngine.position + Move ;
         TankEngine.MovePosition(Poze) ;
     }
-    void Rotates()
-    {
+    void Rotate(){
         float R = Input.GetAxis("Horizontal") * RotateSpeed * Time.deltaTime ;
-
+        Quaternion Rotate = Quaternion.Euler(0,R,0) ;
+        TankEngine.MoveRotation(TankEngine.rotation * Rotate) ;
     }
     void Update (){
         Move() ;
+        Rotate() ;
     }
 }
