@@ -76,3 +76,7 @@ Assets/[Tt]emp.meta
 # Project configuration folders
 .vscode/
 .plastic/
+
+# Recovery from crashes
+Assets/_Recovery
+Assets/_Recovery.meta
