@@ -1,6 +1,6 @@
 using UnityEngine ; 
 public class ControllerTank : MonoBehaviour {
-    float Movespeed = 2 ; 
+    public float Movespeed = 4 ; 
     float RotateSpeed = 60 ; 
     Rigidbody TankEngine ;
     public GameObject Tower ;

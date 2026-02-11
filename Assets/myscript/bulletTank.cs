@@ -11,7 +11,7 @@ public class bulletTank : MonoBehaviour {
     {
         Debug.Log("Collide with " + other.gameObject.tag);
         // Nếu trúng Tank → gây damage
-        if (other.CompareTag("Enemy"))
+        if (other.CompareTag("Enemy")|| other.CompareTag("Player"))
         {
             ParticleSystem effect = Instantiate(
                 effectImpact,
