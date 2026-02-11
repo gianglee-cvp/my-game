@@ -6,6 +6,8 @@ public class ControllerTank : MonoBehaviour {
     public GameObject Tower ;
     public Camera CameraFollow ;
     public ParticleSystem[] ShootFX;
+    public GameObject bullet ;
+    public Transform shootElement ;
 
     void Start (){
         TankEngine = GetComponent<Rigidbody>() ;
@@ -41,12 +43,9 @@ public class ControllerTank : MonoBehaviour {
             {
                 ShootFX[i].Play();
             }
-            
+            GameObject bulletInstance = Instantiate(bullet, shootElement.position, shootElement.rotation);
         }
-
-
     }
-
     void Update (){
         Move() ;
         Rotate() ;
