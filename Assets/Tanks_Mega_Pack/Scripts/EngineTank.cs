@@ -75,7 +75,7 @@ public class EngineTank : MonoBehaviour
         // очень сложный кусок - генерация луча, потом создание какого то плэйна...
         Ray ray = cam.ScreenPointToRay(Input.mousePosition);
         Plane plane = new Plane(Vector3.up, Vector3.zero);
-        float distance;
+        float distance; 
         if (plane.Raycast(ray, out distance))
         {
             Vector3 target = ray.GetPoint(distance);
