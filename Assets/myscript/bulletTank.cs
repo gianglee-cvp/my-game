@@ -49,7 +49,7 @@ public class bulletTank : MonoBehaviour
             }
             Destroy(transform.parent.gameObject);
         }
-        else if (other.CompareTag("b"))
+        else if (other.transform.root.CompareTag("b"))
         {
             Debug.Log($"[{bulletName}] hit barrier, destroying...");
             Destroy(transform.parent.gameObject);
