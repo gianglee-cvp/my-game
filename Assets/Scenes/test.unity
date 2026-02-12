@@ -253,7 +253,7 @@ MonoBehaviour:
   - {fileID: 1935224623}
   - {fileID: 1897943310}
   - {fileID: 1883789149}
-  bullet: {fileID: 1223364856177352, guid: db81666123e12094099cbf3096fae7ae, type: 3}
+  bullet: {fileID: 3357759375718764902, guid: 3d0123344dacc467ebde76122d5e34b0, type: 3}
   shootElement: {fileID: 1091666161}
 --- !u!114 &37578776
 MonoBehaviour:
@@ -431,6 +431,10 @@ PrefabInstance:
     - target: {fileID: 4235464762511528, guid: bcad0cf325d81ad4aa73fbbe3ec47e8b, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4568465100796938, guid: bcad0cf325d81ad4aa73fbbe3ec47e8b, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 1.229
       objectReference: {fileID: 0}
     - target: {fileID: 114255161197335966, guid: bcad0cf325d81ad4aa73fbbe3ec47e8b, type: 3}
       propertyPath: m_Enabled
@@ -5357,9 +5361,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1460535950586740, guid: b8d240b9a1c241241accd04d978b05fd, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1800886349295760, guid: b8d240b9a1c241241accd04d978b05fd, type: 3}
       propertyPath: m_Name
       value: Wheels_2_Shot_1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1800886349295760, guid: b8d240b9a1c241241accd04d978b05fd, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1800886349295760, guid: b8d240b9a1c241241accd04d978b05fd, type: 3}
       propertyPath: m_TagString
@@ -5367,7 +5379,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4257667193056614, guid: b8d240b9a1c241241accd04d978b05fd, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -9.59367
+      value: -6.41
       objectReference: {fileID: 0}
     - target: {fileID: 4257667193056614, guid: b8d240b9a1c241241accd04d978b05fd, type: 3}
       propertyPath: m_LocalPosition.y
@@ -5375,7 +5387,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4257667193056614, guid: b8d240b9a1c241241accd04d978b05fd, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 3.38175
+      value: 16.71
       objectReference: {fileID: 0}
     - target: {fileID: 4257667193056614, guid: b8d240b9a1c241241accd04d978b05fd, type: 3}
       propertyPath: m_LocalRotation.w
@@ -15858,7 +15870,7 @@ MonoBehaviour:
   detectionRange: 40
   stopRange: 10
   shootRange: 30
-  bullet: {fileID: 1223364856177352, guid: db81666123e12094099cbf3096fae7ae, type: 3}
+  bullet: {fileID: 3200511878250533640, guid: 69208f6b3f07a4821b162ee29840ca25, type: 3}
   shootElement: {fileID: 937018206}
   ShootFX:
   - {fileID: 1905139760}
@@ -15866,7 +15878,6 @@ MonoBehaviour:
   - {fileID: 1995062560}
   - {fileID: 395236288}
   - {fileID: 786899805}
-  fireCooldown: 2
 --- !u!114 &1574178077
 MonoBehaviour:
   m_ObjectHideFlags: 0

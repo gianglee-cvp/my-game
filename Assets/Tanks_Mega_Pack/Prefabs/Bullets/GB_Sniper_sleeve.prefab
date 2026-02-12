@@ -124,5 +124,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6e791bbe14c484d0c808543509c0c36d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::bulletTank
+  speed: 20
   damage: 20
+  fireCooldown: 1
+  effectScale: 1
   effectImpact: {fileID: 4690912318133274679, guid: 9dae6e8d27d484e51b25fd550c4f75a9, type: 3}
+  bulletName: Sniper_sleeve
