@@ -8,6 +8,7 @@ public class bulletTank : MonoBehaviour
     public float fireCooldown = 1f;
     public float effectScale = 1f;
     float destroyTime = 10f;
+
     [Header("Effect")]
     public ParticleSystem effectImpact;
     
@@ -15,29 +16,35 @@ public class bulletTank : MonoBehaviour
     public string bulletName = "Tank Bullet";
 
     Rigidbody bulletEngine;
+
     void Start()
     {
         bulletEngine = GetComponent<Rigidbody>();
+
         if (bulletName == "plougher_bullet")
         {
             effectScale = 2f;
         }
+
         Debug.Log("position bullet: " + transform.position);
     }
 
     void OnTriggerEnter(Collider other)
     {
-
         if (other.CompareTag("Enemy") || other.CompareTag("Player"))
         {
-            ParticleSystem effect = Instantiate(
-                effectImpact,
-                transform.position,
-                Quaternion.identity
-            );
-            effect.transform.localScale = Vector3.one * effectScale;
-            Destroy(effect.gameObject, effect.main.duration);
-            
+            if (effectImpact != null)
+            {
+                ParticleSystem effect = Instantiate(
+                    effectImpact,
+                    transform.position,
+                    Quaternion.identity
+                );
+
+                effect.transform.localScale = Vector3.one * effectScale;
+                Destroy(effect.gameObject, effect.main.duration);
+            }
+
             HP hp = other.GetComponent<HP>();
             if (hp != null)
             {
@@ -47,23 +54,37 @@ public class bulletTank : MonoBehaviour
             {
                 Debug.LogWarning($"[{bulletName}] hit {other.gameObject.name} but no HP component found!");
             }
-            Destroy(transform.parent.gameObject);
+
+            DestroyBullet();
         }
         else if (other.transform.root.CompareTag("b"))
         {
             Debug.Log($"[{bulletName}] hit barrier, destroying...");
-            Destroy(transform.parent.gameObject);
+            DestroyBullet();
         }
     }
 
     void Update()
     {
         transform.Translate(Vector3.forward * speed * Time.deltaTime);
+
         destroyTime -= Time.deltaTime;
         if (destroyTime <= 0)
         {
-            Destroy(transform.parent.gameObject);
+            DestroyBullet();
             Debug.Log("destroy bullet");
+        }
+    }
+
+    void DestroyBullet()
+    {
+        if (transform.parent != null)
+        {
+            Destroy(transform.parent.gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
         }
     }
 }
