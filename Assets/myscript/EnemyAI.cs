@@ -2,6 +2,9 @@ using UnityEngine;
 
 public class EnemyAI : MonoBehaviour
 {
+    public enum EnemyType { Shooter, Bomber }
+    public EnemyType type;
+
     public Transform player;
     public float moveSpeed = 5f;
     public float rotateSpeed = 5f;
@@ -10,6 +13,7 @@ public class EnemyAI : MonoBehaviour
     public float shootRange = 30f;
 
     public GameObject bullet;
+    public GameObject bombPrefab;
     public Transform shootElement;
     public ParticleSystem[] ShootFX;
 
@@ -32,13 +36,13 @@ public class EnemyAI : MonoBehaviour
 
         if (distanceToPlayer <= stopRange)
         {
-            Fire();
+            PerformAction();
             return;
         }
 
         if (distanceToPlayer <= shootRange)
         {
-            Fire();
+            PerformAction();
         }
 
         MoveForward();
@@ -65,6 +69,28 @@ public class EnemyAI : MonoBehaviour
         rb.MovePosition(rb.position + move);
     }
 
+    private bool hasActed = false;
+
+    void PerformAction()
+    {
+        if (hasActed) return;
+
+        if (type == EnemyType.Shooter)
+        {
+            Fire();
+            hasActed = true; // For shooter, maybe we want it to keep firing? 
+            // The user said "chỉ cần dropbom 1 lần thôi rồi object biến mất" 
+            // and later "sửa thành có biến enemy đã bắn hay chưa nếu đã bắn rồi thì xoá object đó".
+            // So if Shooter fires once, it also disappears? 
+            // I'll assume both types act once and disappear based on the request.
+            Destroy(gameObject, 0.1f); 
+        }
+        else if (type == EnemyType.Bomber)
+        {
+            DropBomb();
+        }
+    }
+
     void Fire()
     {
         if (Time.time < nextFireTime) return;
@@ -82,17 +108,44 @@ public class EnemyAI : MonoBehaviour
             shootElement.rotation
         );
 
-     //   bulletTank bulletScript = bulletInstance.GetComponent<bulletTank>();
         bulletTank bulletScript = bulletInstance.GetComponentInChildren<bulletTank>();
 
         if (bulletScript != null)
         {
             nextFireTime = Time.time + bulletScript.fireCooldown;
         }
+    }
+
+    void DropBomb()
+    {
+        if (hasActed) return;
+        
+        Bomb bombScript = GetComponentInChildren<Bomb>();
+        if (bombScript != null)
+        {
+            hasActed = true;
+            GameObject bombObject = bombScript.gameObject;
+            
+            // Detach bomb from drone so it doesn't get destroyed with the drone
+            bombObject.transform.SetParent(null);
+            
+            // Ensure it has a Rigidbody to fall
+            Rigidbody bombRb = bombObject.GetComponent<Rigidbody>();
+            if (bombRb == null)
+            {
+                bombRb = bombObject.AddComponent<Rigidbody>();
+            }
+            
+            // Activate physics
+            bombRb.isKinematic = false;
+            bombRb.useGravity = true;
+
+            Debug.Log("Drone dropped bomb and destroying self");
+            Destroy(gameObject);
+        }
         else
         {
-            Debug.LogWarning("Bullet has no bulletTank script!");
-            nextFireTime = Time.time + 1f; // fallback
+            Debug.LogWarning("No child with Bomb script found!");
         }
     }
 }
