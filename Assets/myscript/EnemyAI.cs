@@ -78,15 +78,11 @@ public class EnemyAI : MonoBehaviour
         if (type == EnemyType.Shooter)
         {
             Fire();
-            hasActed = true; // For shooter, maybe we want it to keep firing? 
-            // The user said "chỉ cần dropbom 1 lần thôi rồi object biến mất" 
-            // and later "sửa thành có biến enemy đã bắn hay chưa nếu đã bắn rồi thì xoá object đó".
-            // So if Shooter fires once, it also disappears? 
-            // I'll assume both types act once and disappear based on the request.
-            Destroy(gameObject, 0.1f); 
+           // hasActed = true; // For shooter, maybe we want it to keep firing? 
         }
         else if (type == EnemyType.Bomber)
         {
+            if (hasActed) return;
             DropBomb();
         }
     }
