@@ -13,13 +13,14 @@ GameObject:
   - component: {fileID: 8790652031286684076}
   - component: {fileID: 1821116527566493848}
   - component: {fileID: 5030168526452515172}
-  m_Layer: 0
+  - component: {fileID: 2047988960443018032}
+  m_Layer: 3
   m_Name: Caterpillar_Shot_2
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &4378536828715622023
 Transform:
   m_ObjectHideFlags: 0
@@ -67,7 +68,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 76259500111751883}
   serializedVersion: 5
-  m_Mass: 1
+  m_Mass: 10000
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -106,9 +107,9 @@ MonoBehaviour:
   stopRange: 10
   shootRange: 20
   bullet: {fileID: 3200511878250533640, guid: 69208f6b3f07a4821b162ee29840ca25, type: 3}
-  bombPrefab: {fileID: 0}
   shootElement: {fileID: 1439558883161713826}
   ShootFX: []
+  mySpawner: {fileID: 0}
 --- !u!114 &5030168526452515172
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -123,6 +124,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HP
   maxHP: 100
   currentHP: 0
+--- !u!195 &2047988960443018032
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 76259500111751883}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 1.5
+  m_Speed: 3.5
+  m_Acceleration: 8
+  avoidancePriority: 50
+  m_AngularSpeed: 120
+  m_StoppingDistance: 0
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 2
+  m_BaseOffset: 0
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4
 --- !u!1 &131615154523572597
 GameObject:
   m_ObjectHideFlags: 0
@@ -134,7 +157,7 @@ GameObject:
   - component: {fileID: 2413730906055977277}
   - component: {fileID: 7722988849241098561}
   - component: {fileID: 7543020133778811953}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Caterpillar_1_Base
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -223,7 +246,7 @@ GameObject:
   - component: {fileID: 9072227442941779361}
   - component: {fileID: 1579435374806567984}
   - component: {fileID: 2926378842614473706}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: GB_sniper_sleeve_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5074,7 +5097,7 @@ GameObject:
   - component: {fileID: 952653610477877086}
   - component: {fileID: 5884846151574302313}
   - component: {fileID: 1122482646024648367}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: EnemyBug (8)
   m_TagString: Tank
   m_Icon: {fileID: 0}
@@ -5197,7 +5220,7 @@ GameObject:
   - component: {fileID: 2494605261412206053}
   - component: {fileID: 6858568902007428850}
   - component: {fileID: 2993587525276043143}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Lighting_1 (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -10046,7 +10069,7 @@ GameObject:
   - component: {fileID: 1807974220231634053}
   - component: {fileID: 9077178439155381874}
   - component: {fileID: 3184249321294427300}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Shot_t_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -10135,7 +10158,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1439558883161713826}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: shootElement_1 (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -10168,7 +10191,7 @@ GameObject:
   - component: {fileID: 879314976650900467}
   - component: {fileID: 1538489533367292985}
   - component: {fileID: 6629720977926150850}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: sparks (5)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -15249,7 +15272,7 @@ GameObject:
   - component: {fileID: 7352617880184259851}
   - component: {fileID: 7665211277013504992}
   - component: {fileID: 8498044560940688619}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: GB_sniper_sleeve_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -20096,7 +20119,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5892716160084081926}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: GB_sniper_FX (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -20137,7 +20160,7 @@ GameObject:
   - component: {fileID: 3350997630335720158}
   - component: {fileID: 4618221879230635074}
   - component: {fileID: 740990437973552541}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: sparks (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -25219,7 +25242,7 @@ GameObject:
   - component: {fileID: 8967502073292658324}
   - component: {fileID: 7744631128679543756}
   - component: {fileID: 7405505417082604810}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Caterpillar_1_L
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -25323,7 +25346,7 @@ GameObject:
   - component: {fileID: 5844625377960394619}
   - component: {fileID: 2238896226374475022}
   - component: {fileID: 4977241583749688615}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: sparks (6)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -30404,7 +30427,7 @@ GameObject:
   - component: {fileID: 2154426124859222135}
   - component: {fileID: 7085399995291386009}
   - component: {fileID: 6870090355613671626}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Lighting_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -35253,7 +35276,7 @@ GameObject:
   - component: {fileID: 6026750260078079362}
   - component: {fileID: 5253418339000142328}
   - component: {fileID: 702922884648905316}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: sparks (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -40334,7 +40357,7 @@ GameObject:
   - component: {fileID: 7769731867922731366}
   - component: {fileID: 7861345552777449345}
   - component: {fileID: 9173633786436288509}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Caterpillar_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -40424,7 +40447,7 @@ GameObject:
   - component: {fileID: 4152171807229037248}
   - component: {fileID: 9071728060969327845}
   - component: {fileID: 4542500818880915462}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Caterpillar_1_R
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -40526,7 +40549,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6981096197750732604}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Caterpillar_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}

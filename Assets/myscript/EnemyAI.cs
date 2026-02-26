@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.AI;
 
 public class EnemyAI : MonoBehaviour
 {
@@ -6,52 +7,150 @@ public class EnemyAI : MonoBehaviour
     public EnemyType type;
 
     public Transform player;
+
+    [Header("Movement")]
     public float moveSpeed = 5f;
     public float rotateSpeed = 5f;
     public float detectionRange = 40f;
     public float stopRange = 10f;
     public float shootRange = 30f;
 
+    [Header("Bomber Flight")]
+    public float flyHeight = 7f;
+    public float ascendSpeed = 3f;
+
+    [Header("Attack")]
     public GameObject bullet;
-    public GameObject bombPrefab;
     public Transform shootElement;
     public ParticleSystem[] ShootFX;
 
-    private float nextFireTime = 0f;
+    public EnemySpawner mySpawner;
 
-    Rigidbody rb;
+    private float nextFireTime = 0f;
+    private bool hasActed = false;
+    private bool isAscending = false;
+
+    private NavMeshAgent agent;
+    private Rigidbody rb;
 
     void Start()
     {
-        rb = GetComponent<Rigidbody>();
+        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+        if (playerObj != null)
+            player = playerObj.transform;
+
+        if (type == EnemyType.Shooter)
+        {
+            agent = GetComponent<NavMeshAgent>();
+            agent.speed = moveSpeed;
+            agent.stoppingDistance = stopRange;
+            agent.updateRotation = false;
+        }
+        else if (type == EnemyType.Bomber)
+        {
+            rb = GetComponent<Rigidbody>();
+            rb.useGravity = false;      // Không cho rơi
+            isAscending = true;         // Bắt đầu bay lên
+        }
     }
 
-    void FixedUpdate()
+    void Update()
     {
+        if (player == null) return;
+
         float distanceToPlayer = Vector3.Distance(transform.position, player.position);
 
         if (distanceToPlayer > detectionRange) return;
 
-        RotateToPlayer();
-
-        if (distanceToPlayer <= stopRange)
+        if (type == EnemyType.Shooter)
         {
-            PerformAction();
+            ShooterLogic(distanceToPlayer);
+        }
+    }
+
+    void FixedUpdate()
+    {
+        if (player == null) return;
+
+        float distanceToPlayer = Vector3.Distance(transform.position, player.position);
+
+        if (distanceToPlayer > detectionRange) return;
+
+        if (type == EnemyType.Bomber)
+        {
+            if (isAscending)
+            {
+                Ascend();
+                return;
+            }
+
+            BomberLogic(distanceToPlayer);
+        }
+    }
+
+    // ================= SHOOTER =================
+
+    void ShooterLogic(float distance)
+    {
+        agent.SetDestination(player.position);
+
+        if (distance <= stopRange)
+        {
+            agent.isStopped = true;
+            RotateToPlayer();
+            Fire();
+        }
+        else
+        {
+            agent.isStopped = false;
+            RotateToPlayer();
+
+            if (distance <= shootRange)
+            {
+                Fire();
+            }
+        }
+    }
+
+    // ================= BOMBER =================
+
+    void Ascend()
+    {
+        Vector3 targetPos = new Vector3(rb.position.x, flyHeight, rb.position.z);
+
+        Vector3 newPos = Vector3.MoveTowards(
+            rb.position,
+            targetPos,
+            ascendSpeed * Time.fixedDeltaTime
+        );
+
+        rb.MovePosition(newPos);
+
+        if (Mathf.Abs(rb.position.y - flyHeight) < 0.1f)
+        {
+            isAscending = false;
+        }
+    }
+
+    void BomberLogic(float distance)
+    {
+        RotateToPlayerRB();
+
+        if (distance <= stopRange)
+        {
+            DropBomb();
             return;
         }
 
-        if (distanceToPlayer <= shootRange)
-        {
-            PerformAction();
-        }
-
-        MoveForward();
+        MoveForwardRB();
     }
 
-    void RotateToPlayer()
+    void RotateToPlayerRB()
     {
         Vector3 direction = player.position - transform.position;
         direction.y = 0f;
+
+        if (direction == Vector3.zero) return;
 
         Quaternion targetRotation = Quaternion.LookRotation(direction);
         Quaternion smoothRotation = Quaternion.Slerp(
@@ -63,35 +162,36 @@ public class EnemyAI : MonoBehaviour
         rb.MoveRotation(smoothRotation);
     }
 
-    void MoveForward()
+    void MoveForwardRB()
     {
-        Vector3 move = transform.forward * moveSpeed * Time.fixedDeltaTime;
-        rb.MovePosition(rb.position + move);
+        // Giữ cố định độ cao 7f
+        Vector3 forwardMove = transform.forward * moveSpeed * Time.fixedDeltaTime;
+        Vector3 newPos = rb.position + forwardMove;
+        newPos.y = flyHeight;
+
+        rb.MovePosition(newPos);
     }
 
-    private bool hasActed = false;
+    // ================= COMMON =================
 
-    void PerformAction()
+    void RotateToPlayer()
     {
-        if (hasActed) return;
+        Vector3 direction = player.position - transform.position;
+        direction.y = 0f;
 
-        if (type == EnemyType.Shooter)
-        {
-            Fire();
-           // hasActed = true; // For shooter, maybe we want it to keep firing? 
-        }
-        else if (type == EnemyType.Bomber)
-        {
-            if (hasActed) return;
-            DropBomb();
-        }
+        if (direction == Vector3.zero) return;
+
+        Quaternion targetRotation = Quaternion.LookRotation(direction);
+        transform.rotation = Quaternion.Slerp(
+            transform.rotation,
+            targetRotation,
+            rotateSpeed * Time.deltaTime
+        );
     }
 
     void Fire()
     {
         if (Time.time < nextFireTime) return;
-
-        Debug.Log("Enemy Fire");
 
         for (int i = 0; i < ShootFX.Length; i++)
         {
@@ -115,33 +215,29 @@ public class EnemyAI : MonoBehaviour
     void DropBomb()
     {
         if (hasActed) return;
-        
+
         Bomb bombScript = GetComponentInChildren<Bomb>();
         if (bombScript != null)
         {
             hasActed = true;
+
             GameObject bombObject = bombScript.gameObject;
-            
-            // Detach bomb from drone so it doesn't get destroyed with the drone
             bombObject.transform.SetParent(null);
-            
-            // Ensure it has a Rigidbody to fall
+
             Rigidbody bombRb = bombObject.GetComponent<Rigidbody>();
             if (bombRb == null)
-            {
                 bombRb = bombObject.AddComponent<Rigidbody>();
-            }
-            
-            // Activate physics
+
             bombRb.isKinematic = false;
             bombRb.useGravity = true;
 
-            Debug.Log("Drone dropped bomb and destroying self");
             Destroy(gameObject);
         }
-        else
-        {
-            Debug.LogWarning("No child with Bomb script found!");
-        }
+    }
+
+    void OnDestroy()
+    {
+        if (mySpawner != null)
+            mySpawner.EnemyDied();
     }
 }

@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 264611041430990440}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Fang_L_end
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -40,7 +40,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5152003767312870920}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Fang_R
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -72,7 +72,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6804051724925504072}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: MAIN_FX2 (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -104,7 +104,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4005636506578589101}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Leg_02_F_L
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -136,7 +136,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 906928791937505755}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Leg_02_F_R
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -172,7 +172,7 @@ GameObject:
   - component: {fileID: 8131219560974035429}
   - component: {fileID: 1014034960473367807}
   - component: {fileID: 5181197843564534116}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: EnemyBug (12)
   m_TagString: Tank
   m_Icon: {fileID: 0}
@@ -295,7 +295,7 @@ GameObject:
   - component: {fileID: 8161244444374475744}
   - component: {fileID: 2795024515230904557}
   - component: {fileID: 1007490594578594855}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Laser_t_2_LP
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -385,7 +385,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 97168509475438300}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Leg_02_B_L_end
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -416,7 +416,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3044165192513781628}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Fang_R_end
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -447,7 +447,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7801930758703273707}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Leg_02_B_R
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -479,7 +479,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1771803442603125152}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Leg_02_B_L
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -511,7 +511,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2639020885956836227}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Head
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -549,7 +549,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3042032056212256333}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Leg_01_B_R
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -581,7 +581,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5058440250756107405}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Leg_02_F_L_end
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -612,7 +612,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1819472493173444295}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Leg_01_F_L
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -644,7 +644,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1885950018938778796}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Leg_02_B_R_end
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -676,7 +676,7 @@ GameObject:
   m_Component:
   - component: {fileID: 152247889757776312}
   - component: {fileID: 219082112205214706}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Spider_2_LP (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -733,7 +733,7 @@ GameObject:
   - component: {fileID: 4371297547687815650}
   - component: {fileID: 7370719456261233122}
   - component: {fileID: 4784958574939950895}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Electricity_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5580,7 +5580,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3945714909562621110}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Fang_L
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5612,7 +5612,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2965512158109660813}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Armature
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5644,7 +5644,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2656043971881268889}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Leg_01_F_R
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5676,7 +5676,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3715250144143286587}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: MAIN_FX2 (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5708,7 +5708,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2251196099887072337}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Leg_02_F_R_end
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5742,15 +5742,16 @@ GameObject:
   - component: {fileID: 4608628160023575059}
   - component: {fileID: 1104470785473528607}
   - component: {fileID: 8540724742801511046}
-  - component: {fileID: 3612504765494883857}
   - component: {fileID: 252360347811570802}
-  m_Layer: 0
+  - component: {fileID: 771557226885426681}
+  - component: {fileID: 2455021727722827339}
+  m_Layer: 3
   m_Name: Spider_2_Laser_2
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &8350815741030527604
 Transform:
   m_ObjectHideFlags: 0
@@ -5842,29 +5843,6 @@ MonoBehaviour:
   Meshes:
   - {fileID: 5349284524813044746}
   n: 0
---- !u!114 &3612504765494883857
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8289160200674840593}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5ca0148bc8a4b9e4ab39f809c90b3870, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyAI
-  type: 0
-  player: {fileID: 0}
-  moveSpeed: 5
-  rotateSpeed: 5
-  detectionRange: 40
-  stopRange: 10
-  shootRange: 30
-  bullet: {fileID: 1462359765158876, guid: b6dd62d933149e54f9f0371e5e54afcf, type: 3}
-  bombPrefab: {fileID: 0}
-  shootElement: {fileID: 2719189258987036263}
-  ShootFX: []
 --- !u!114 &252360347811570802
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5879,6 +5857,51 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HP
   maxHP: 100
   currentHP: 0
+--- !u!195 &771557226885426681
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8289160200674840593}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 0.5
+  m_Speed: 3.5
+  m_Acceleration: 8
+  avoidancePriority: 50
+  m_AngularSpeed: 120
+  m_StoppingDistance: 0
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 2
+  m_BaseOffset: 0
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4
+--- !u!114 &2455021727722827339
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8289160200674840593}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ca0148bc8a4b9e4ab39f809c90b3870, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyAITest
+  type: 0
+  player: {fileID: 0}
+  moveSpeed: 5
+  rotateSpeed: 5
+  detectionRange: 40
+  stopRange: 10
+  shootRange: 30
+  bullet: {fileID: 1462359765158876, guid: b6dd62d933149e54f9f0371e5e54afcf, type: 3}
+  shootElement: {fileID: 2719189258987036263}
+  ShootFX: []
+  mySpawner: {fileID: 0}
 --- !u!1 &8401443433333994555
 GameObject:
   m_ObjectHideFlags: 0
@@ -5888,7 +5911,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7414201862920967536}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Leg_01_B_L
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5922,7 +5945,7 @@ GameObject:
   - component: {fileID: 1142957829707876751}
   - component: {fileID: 1929182067786668135}
   - component: {fileID: 8799299735932304256}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: ShootElement (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -6011,7 +6034,7 @@ GameObject:
   - component: {fileID: 6680241283026417241}
   - component: {fileID: 1692616787913423}
   - component: {fileID: 8452600754740140500}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Electricity_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -10859,7 +10882,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8354503332590861719}
   - component: {fileID: 2914200288918821666}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Spider_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -10960,7 +10983,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2719189258987036263}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Shoot_element
   m_TagString: Untagged
   m_Icon: {fileID: 0}
