@@ -2,6 +2,14 @@ using UnityEngine;
 
 public class Spin : MonoBehaviour
 {
+    public enum ItemType
+    {
+        Coin,
+        Cross,
+        Shield
+    }
+
+    public ItemType itemType;
     public float rotateSpeed = 100f;
 
     void Update()

@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7473799100734915149}
   m_Layer: 0
   m_Name: Sign_shield_root
-  m_TagString: Untagged
+  m_TagString: Item
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -43,6 +43,10 @@ PrefabInstance:
     - target: {fileID: 1616031220722450, guid: f58b91852fa7f4f08aad7e86c272098d, type: 3}
       propertyPath: m_Name
       value: Sign_shield
+      objectReference: {fileID: 0}
+    - target: {fileID: 1616031220722450, guid: f58b91852fa7f4f08aad7e86c272098d, type: 3}
+      propertyPath: m_TagString
+      value: Item
       objectReference: {fileID: 0}
     - target: {fileID: 4000340897947694, guid: f58b91852fa7f4f08aad7e86c272098d, type: 3}
       propertyPath: m_LocalPosition.x
@@ -114,4 +118,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6989f7b1a794141bda40656e61135051, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Spin
+  itemType: 2
   rotateSpeed: 100

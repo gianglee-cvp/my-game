@@ -8,6 +8,7 @@ TagManager:
   - b
   - Castle
   - Enemy
+  - Item
   layers:
   - Default
   - TransparentFX
