@@ -28,8 +28,6 @@ public class EnemySpawner : MonoBehaviour
     IEnumerator StartWave()
     {
         isSpawning = true;
-        Debug.Log("Spawning wave " + currentWave);
-
         int amount = startEnemyCount * currentWave;
 
         for (int i = 0; i < amount; i++)
@@ -65,11 +63,9 @@ public class EnemySpawner : MonoBehaviour
 
     void Update()
     {
-        Debug.Log("Enemies alive: " + enemiesAlive);
         if (enemiesAlive == 0 && !isSpawning)
         {
             isSpawning = true;
-            Debug.Log("All enemies died. Spawning next wave.");
             StartCoroutine(NextWave());
         }
     }
