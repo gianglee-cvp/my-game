@@ -31,6 +31,7 @@ public class bulletTank : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
+        Debug.Log($"[{bulletName}] hit {other.gameObject.tag}");
         if (other.CompareTag("Enemy") || other.CompareTag("Player"))
         {
             if (effectImpact != null)
@@ -57,7 +58,7 @@ public class bulletTank : MonoBehaviour
 
             DestroyBullet();
         }
-        else if (other.transform.root.CompareTag("b"))
+        else if (other.transform.root.CompareTag("b") || other.CompareTag("Shield"))
         {
             Debug.Log($"[{bulletName}] hit barrier, destroying...");
             DestroyBullet();

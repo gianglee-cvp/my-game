@@ -31,7 +31,7 @@ public class Spin : MonoBehaviour
                 break;
 
             case ItemType.Shield:
-                player.ActivateShield(5f);
+                player.ActivateShield(20f);
                 break;
 
             case ItemType.Cross:

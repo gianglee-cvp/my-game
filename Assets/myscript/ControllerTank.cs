@@ -1,7 +1,12 @@
 using UnityEngine;
+using ProceduralForceField;
+
 
 public class ControllerTank : MonoBehaviour
 {
+    public GameObject shieldObject;
+    private ProceduralForceFieldOverlay shieldOverlay;
+
     public float Movespeed = 4f;
     float RotateSpeed = 60f;
 
@@ -27,6 +32,11 @@ public class ControllerTank : MonoBehaviour
     void Start()
     {
         TankEngine = GetComponent<Rigidbody>();
+        if (shieldObject != null)
+        {
+            shieldOverlay = shieldObject.GetComponent<ProceduralForceFieldOverlay>();
+            shieldObject.SetActive(false); // ban đầu tắt
+        }
     }
 
     void Move()
@@ -110,14 +120,19 @@ public class ControllerTank : MonoBehaviour
         if (!isShield) return;
 
         shieldTimer -= Time.deltaTime;
-        Debug.Log("Shield còn: " + shieldTimer.ToString("F1") + " giây");
 
         if (shieldTimer <= 0f)
         {
             isShield = false;
             shieldTimer = 0f;
-            Debug.Log("Shield đã hết!");
+
+            if (shieldObject != null)
+            {
+                shieldObject.SetActive(false);
         }
+
+        Debug.Log("Shield đã hết!");
+    }
     }
     /// collect item 
     public void AddCoin(int amount)
@@ -130,8 +145,18 @@ public class ControllerTank : MonoBehaviour
     {
         isShield = true;
         shieldTimer = duration;
+
+        if (shieldObject != null)
+        {
+            shieldObject.SetActive(true);
+
+            if (shieldOverlay != null)
+            {
+                shieldOverlay.Trigger(transform.position);
+            }
+        }
+
         Debug.Log("Player bật shield trong " + duration + " giây");
-        // TODO: thêm logic xử lý shield ở đây
     }
 
 }
