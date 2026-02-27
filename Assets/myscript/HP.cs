@@ -23,6 +23,15 @@ public class HP : MonoBehaviour
             Die();
         }
     }
+    public void Heal(float amount)
+    {
+        currentHP += amount;
+
+        if (currentHP > maxHP)
+            currentHP = maxHP;
+
+        Debug.Log(gameObject.name + " HP sau khi hồi: " + currentHP);
+    }
 
     void Die()
     {

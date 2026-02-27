@@ -17,6 +17,13 @@ public class ControllerTank : MonoBehaviour
 
     private float nextFireTime = 0f;
 
+    // Số coin nhặt được
+    public int coinCount = 0;
+
+    // Trạng thái khiên
+    public bool isShield = false;
+    private float shieldTimer = 0f;
+
     void Start()
     {
         TankEngine = GetComponent<Rigidbody>();
@@ -95,5 +102,36 @@ public class ControllerTank : MonoBehaviour
         Rotate();
         RotateTower();
         Fire();
+        UpdateShield();
     }
+
+    void UpdateShield()
+    {
+        if (!isShield) return;
+
+        shieldTimer -= Time.deltaTime;
+        Debug.Log("Shield còn: " + shieldTimer.ToString("F1") + " giây");
+
+        if (shieldTimer <= 0f)
+        {
+            isShield = false;
+            shieldTimer = 0f;
+            Debug.Log("Shield đã hết!");
+        }
+    }
+    /// collect item 
+    public void AddCoin(int amount)
+    {
+        coinCount += amount;
+        Debug.Log("Player nhận " + amount + " coin. Tổng coin: " + coinCount);
+    }
+
+    public void ActivateShield(float duration)
+    {
+        isShield = true;
+        shieldTimer = duration;
+        Debug.Log("Player bật shield trong " + duration + " giây");
+        // TODO: thêm logic xử lý shield ở đây
+    }
+
 }
