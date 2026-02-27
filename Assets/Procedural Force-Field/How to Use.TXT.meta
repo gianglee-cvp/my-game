@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: feaa67c9923904a4b9c773fbe3685efa
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 351782
+  packageName: Procedural Force-Field
+  packageVersion: 1.0.0
+  assetPath: Assets/Procedural Force-Field/How to Use.TXT
+  uploadId: 838588

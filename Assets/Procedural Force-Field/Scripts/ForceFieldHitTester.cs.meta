@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 64ad3ff753a9f254290c4ba9cc8c318e
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 351782
+  packageName: Procedural Force-Field
+  packageVersion: 1.0.0
+  assetPath: Assets/Procedural Force-Field/Scripts/ForceFieldHitTester.cs
+  uploadId: 838588
