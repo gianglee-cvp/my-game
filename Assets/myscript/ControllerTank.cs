@@ -95,7 +95,7 @@ public class ControllerTank : MonoBehaviour
 
         // 🔥 Lấy cooldown từ bullet
         bulletTank bulletScript = bulletInstance.GetComponent<bulletTank>();
-
+        bulletScript.bulletTeam = Team.Player;
         if (bulletScript != null)
         {
             nextFireTime = Time.time + 0.2f*bulletScript.fireCooldown;

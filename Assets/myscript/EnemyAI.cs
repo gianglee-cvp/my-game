@@ -205,7 +205,7 @@ public class EnemyAI : MonoBehaviour
         );
 
         bulletTank bulletScript = bulletInstance.GetComponentInChildren<bulletTank>();
-
+        bulletScript.bulletTeam = Team.Enemy;
         if (bulletScript != null)
         {
             nextFireTime = Time.time + bulletScript.fireCooldown;
@@ -230,6 +230,16 @@ public class EnemyAI : MonoBehaviour
 
             bombRb.isKinematic = false;
             bombRb.useGravity = true;
+
+            // ✅ Bỏ qua collision giữa bom và enemy đã drop nó
+            // → Tránh bom nổ ngay khi vừa tách ra khỏi enemy
+            Collider bombCol = bombObject.GetComponent<Collider>();
+            Collider[] enemyCols = GetComponentsInChildren<Collider>();
+            if (bombCol != null)
+            {
+                foreach (Collider ec in enemyCols)
+                    Physics.IgnoreCollision(bombCol, ec, true);
+            }
 
             Destroy(gameObject);
         }
