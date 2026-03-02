@@ -9,6 +9,7 @@ TagManager:
   - Castle
   - Enemy
   - Item
+  - Shield
   layers:
   - Default
   - TransparentFX

@@ -92186,6 +92186,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b7743965e54238344815b1065e4bfd63, type: 3}
+--- !u!1 &1495936847 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5376114658198133891, guid: acd61141fd59e48818cfa821a491b67f, type: 3}
+  m_PrefabInstance: {fileID: 1506494614}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1496963011
 GameObject:
   m_ObjectHideFlags: 0
@@ -92373,6 +92378,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2068046744}
     m_Modifications:
+    - target: {fileID: 4259064373942161942, guid: acd61141fd59e48818cfa821a491b67f, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 4259064373942161942, guid: acd61141fd59e48818cfa821a491b67f, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4259064373942161942, guid: acd61141fd59e48818cfa821a491b67f, type: 3}
+      propertyPath: m_TagString
+      value: Shield
+      objectReference: {fileID: 0}
     - target: {fileID: 4805025980266733075, guid: acd61141fd59e48818cfa821a491b67f, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.84316015
@@ -92415,6 +92432,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5376114658198133891, guid: acd61141fd59e48818cfa821a491b67f, type: 3}
       propertyPath: m_Name
+      value: Shield
+      objectReference: {fileID: 0}
+    - target: {fileID: 5376114658198133891, guid: acd61141fd59e48818cfa821a491b67f, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 5376114658198133891, guid: acd61141fd59e48818cfa821a491b67f, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5376114658198133891, guid: acd61141fd59e48818cfa821a491b67f, type: 3}
+      propertyPath: m_TagString
       value: Shield
       objectReference: {fileID: 0}
     m_RemovedComponents: []
@@ -117513,6 +117542,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26a61c87a808d44b0965e385dc552e26, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ControllerTank
+  shieldObject: {fileID: 1495936847}
   Movespeed: 10
   Tower: {fileID: 1145473461}
   CameraFollow: {fileID: 1870096144}
