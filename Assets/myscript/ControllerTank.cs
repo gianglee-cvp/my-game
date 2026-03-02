@@ -17,7 +17,10 @@ public class ControllerTank : MonoBehaviour
 
     public ParticleSystem[] ShootFX;
 
-    public GameObject bullet;
+    [Header("Bullet System")]
+    public GameObject[] bulletPrefabs;
+    [Range(0, 10)]
+    public int currentBulletIndex = 0; // chọn loại đạn trong Inspector
     public Transform shootElement;
 
     private float nextFireTime = 0f;
@@ -77,10 +80,22 @@ public class ControllerTank : MonoBehaviour
     void Fire()
     {
         if (!Input.GetMouseButtonDown(0)) return;
-
         if (Time.time < nextFireTime) return;
 
-        Debug.Log("Player Fire");
+        // ✅ Kiểm tra mảng đạn hợp lệ
+        if (bulletPrefabs == null || bulletPrefabs.Length == 0)
+        {
+            Debug.LogWarning("Chưa gán bulletPrefabs!");
+            return;
+        }
+
+        if (currentBulletIndex < 0 || currentBulletIndex >= bulletPrefabs.Length)
+        {
+            Debug.LogWarning("Index đạn không hợp lệ: " + currentBulletIndex);
+            return;
+        }
+
+        Debug.Log("Player Fire - Đạn index: " + currentBulletIndex);
 
         for (int i = 0; i < ShootFX.Length; i++)
         {
@@ -88,17 +103,17 @@ public class ControllerTank : MonoBehaviour
         }
 
         GameObject bulletInstance = Instantiate(
-            bullet,
+            bulletPrefabs[currentBulletIndex],
             shootElement.position,
             shootElement.rotation
         );
 
         // 🔥 Lấy cooldown từ bullet
         bulletTank bulletScript = bulletInstance.GetComponent<bulletTank>();
-        bulletScript.bulletTeam = Team.Player;
         if (bulletScript != null)
         {
-            nextFireTime = Time.time + 0.2f*bulletScript.fireCooldown;
+            bulletScript.bulletTeam = Team.Player;
+            nextFireTime = Time.time + 0.2f * bulletScript.fireCooldown;
         }
         else
         {

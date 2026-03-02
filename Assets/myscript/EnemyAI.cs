@@ -33,6 +33,14 @@ public class EnemyAI : MonoBehaviour
     private NavMeshAgent agent;
     private Rigidbody rb;
 
+    // ================= STUN =================
+    [Header("Stun Effect")]
+    public Transform stunEffectPoint;          // điểm gắn effect (đầu / thân enemy)
+
+    private bool isStunned = false;
+    private float stunTimer = 0f;
+    private ParticleSystem stunEffectInstance; // instance đang chạy
+
     void Start()
     {
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
@@ -58,8 +66,36 @@ public class EnemyAI : MonoBehaviour
     {
         if (player == null) return;
 
-        float distanceToPlayer = Vector3.Distance(transform.position, player.position);
+        // ⚡ Đang bị stun: đếm ngược và chặn mọi hành động
+        if (isStunned)
+        {
+            // 🛑 Shooter: Dừng NavMeshAgent ngay lập tức
+            if (agent != null && agent.enabled && agent.isOnNavMesh) {
+                agent.isStopped = true;
+                agent.velocity = Vector3.zero;  // triệt tiêu vận tốc hiện tại
+            }
 
+            stunTimer -= Time.deltaTime;
+            if (stunTimer <= 0f)
+            {
+                isStunned = false;
+
+                // � Huỷ effect stun
+                if (stunEffectInstance != null)
+                {
+                    stunEffectInstance.Stop();
+                    Destroy(stunEffectInstance.gameObject);
+                    stunEffectInstance = null;
+                }
+
+                // �🟢 Thả cho AI tiếp tục chạy sau khi hết stun
+                if (agent != null && agent.enabled && agent.isOnNavMesh)
+                    agent.isStopped = false;
+            }
+            return;  // không làm gì khi stun
+        }
+
+        float distanceToPlayer = Vector3.Distance(transform.position, player.position);
         if (distanceToPlayer > detectionRange) return;
 
         if (type == EnemyType.Shooter)
@@ -71,6 +107,16 @@ public class EnemyAI : MonoBehaviour
     void FixedUpdate()
     {
         if (player == null) return;
+
+        if (isStunned) 
+        {
+            // 🛑 Bomber: Triệt tiêu mọi lực để đứng yên tại chỗ
+            if (rb != null) {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
+            return; 
+        }
 
         float distanceToPlayer = Vector3.Distance(transform.position, player.position);
 
@@ -210,6 +256,40 @@ public class EnemyAI : MonoBehaviour
         {
             nextFireTime = Time.time + bulletScript.fireCooldown;
         }
+    }
+
+    // ================= STUN API =================
+
+    public void Stun(float duration, ParticleSystem stunEffect)
+    {
+        // Nếu đang stun → chỉ refresh thời gian
+        if (isStunned)
+        {
+            stunTimer = duration;
+            return;
+        }
+
+        isStunned = true;
+        stunTimer = duration;
+
+        // Tạo effect stun từ prefab của đạn
+        if (stunEffect != null && stunEffectPoint != null)
+        {
+            stunEffectInstance = Instantiate(
+                stunEffect,
+                stunEffectPoint.position,
+                stunEffectPoint.rotation,
+                stunEffectPoint   // gắn theo enemy
+            );
+
+            // ♾️ Ép hiệu ứng luôn lặp lại cho đến khi bị Stop ở Update
+            var main = stunEffectInstance.main;
+            main.loop = true;
+
+            stunEffectInstance.Play();
+        }
+
+        Debug.Log(gameObject.name + " bị stun trong " + duration + " giây");
     }
 
     void DropBomb()

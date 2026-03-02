@@ -6,6 +6,12 @@ public enum Team
     Enemy
 }
 
+public enum BulletType
+{
+    Normal,
+    Tesla
+}
+
 public class bulletTank : MonoBehaviour
 {
     [Header("Stats (Set in Inspector)")]
@@ -18,8 +24,15 @@ public class bulletTank : MonoBehaviour
     [Header("Team")]
     public Team bulletTeam;   // Xác định phe của đạn
 
+    [Header("Bullet Type")]
+    public BulletType bulletType = BulletType.Normal;
+
     [Header("Effect")]
     public ParticleSystem effectImpact;
+
+    [Header("Tesla Settings")]
+    public float stunDuration = 2f;
+    public ParticleSystem stunEffect;
 
     [Header("Info")]
     public string bulletName = "Tank Bullet";
@@ -71,6 +84,16 @@ public class bulletTank : MonoBehaviour
             if (hp != null)
             {
                 hp.TakeDamage(damage);
+            }
+
+            // ⚡ Tesla: gây stun cho enemy (không dùng hiệu ứng)
+            if (bulletType == BulletType.Tesla)
+            {
+                EnemyAI enemy = other.GetComponentInParent<EnemyAI>();
+                if (enemy != null)
+                {
+                    enemy.Stun(stunDuration , stunEffect);
+                }
             }
 
             DestroyBullet();
