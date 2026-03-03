@@ -19,6 +19,7 @@ public class EnemyAI : MonoBehaviour
     [Header("Bomber Flight")]
     public float flyHeight = 7f;
     public float ascendSpeed = 3f;
+    public float bomberLifetime = 15f;
 
     [Header("Attack")]
     public GameObject bullet;
@@ -30,6 +31,7 @@ public class EnemyAI : MonoBehaviour
     private float nextFireTime = 0f;
     private bool hasActed = false;
     private bool isAscending = false;
+    private float bomberSpawnTime = 0f;
 
     private NavMeshAgent agent;
     private Rigidbody rb;
@@ -60,11 +62,18 @@ public class EnemyAI : MonoBehaviour
             rb = GetComponent<Rigidbody>();
             rb.useGravity = false;      // KhÃ´ng cho rÆ¡i
             isAscending = true;         // Báº¯t Ä‘áº§u bay lÃªn
+            bomberSpawnTime = Time.time;
         }
     }
 
     void Update()
     {
+        if (type == EnemyType.Bomber && Time.time - bomberSpawnTime >= bomberLifetime)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         if (player == null) return;
 
         // âš¡ Äang bá»‹ stun: Ä‘áº¿m ngÆ°á»£c vÃ  cháº·n má»i hÃ nh Ä‘á»™ng

@@ -7,7 +7,7 @@ public class ControllerTank : MonoBehaviour
     public GameObject shieldObject;
     private ProceduralForceFieldOverlay shieldOverlay;
 
-    public float Movespeed = 4f;
+    public float Movespeed = 8f;
     float RotateSpeed = 60f;
 
     Rigidbody TankEngine;

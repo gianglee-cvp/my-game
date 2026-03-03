@@ -5907,7 +5907,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8289160200674840593}
   serializedVersion: 5
-  m_Mass: 1
+  m_Mass: 1000
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -6029,6 +6029,7 @@ MonoBehaviour:
   shootRange: 30
   flyHeight: 7
   ascendSpeed: 3
+  bomberLifetime: 15
   bullet: {fileID: 1462359765158876, guid: b6dd62d933149e54f9f0371e5e54afcf, type: 3}
   shootElement: {fileID: 2719189258987036263}
   ShootFX: []

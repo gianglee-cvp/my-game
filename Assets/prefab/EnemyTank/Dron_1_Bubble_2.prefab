@@ -3279,7 +3279,11 @@ MonoBehaviour:
   detectionRange: 40
   stopRange: 6
   shootRange: 6
+  flyHeight: 7
+  ascendSpeed: 3
+  bomberLifetime: 15
   bullet: {fileID: 0}
   shootElement: {fileID: 0}
   ShootFX: []
   mySpawner: {fileID: 0}
+  stunEffectPoints: []
