@@ -117555,7 +117555,11 @@ MonoBehaviour:
   - {fileID: 471216533}
   - {fileID: 1597268735}
   - {fileID: 999250287}
-  bullet: {fileID: 3357759375718764902, guid: 3d0123344dacc467ebde76122d5e34b0, type: 3}
+  bulletPrefabs:
+  - {fileID: 1462359765158876, guid: 6a1be730c40aa4282beed5d0687b05b2, type: 3}
+  - {fileID: 3357759375718764902, guid: 42597be63c91449f8b3a5304e53355f4, type: 3}
+  - {fileID: 3200511878250533640, guid: 09d529a9d4890493887c0d86f6235f8b, type: 3}
+  currentBulletIndex: 0
   shootElement: {fileID: 1434751874}
   coinCount: 0
   isShield: 0
@@ -120191,10 +120195,6 @@ PrefabInstance:
     - target: {fileID: 76259500111751883, guid: 8c4887a2f546c4cf2907086c7f33f82d, type: 3}
       propertyPath: m_Name
       value: Caterpillar_Shot_2
-      objectReference: {fileID: 0}
-    - target: {fileID: 76259500111751883, guid: 8c4887a2f546c4cf2907086c7f33f82d, type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1821116527566493848, guid: 8c4887a2f546c4cf2907086c7f33f82d, type: 3}
       propertyPath: player

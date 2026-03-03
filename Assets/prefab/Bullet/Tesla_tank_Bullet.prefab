@@ -14649,7 +14649,7 @@ MonoBehaviour:
   bulletTeam: 0
   bulletType: 1
   effectImpact: {fileID: 6672064855274951480, guid: 79ebae37a01094b6ca04401b869f4b5b, type: 3}
-  stunDuration: 2
+  stunDuration: 5
   stunEffect: {fileID: 3104830853775512437, guid: f461a4cf0275642b7b26ce64ad7f19b2, type: 3}
   bulletName: Tank Bullet
 --- !u!1 &1760903031563176

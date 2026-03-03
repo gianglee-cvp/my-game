@@ -31,7 +31,7 @@ public class bulletTank : MonoBehaviour
     public ParticleSystem effectImpact;
 
     [Header("Tesla Settings")]
-    public float stunDuration = 2f;
+    public float stunDuration = 5f;
     public ParticleSystem stunEffect;
 
     [Header("Info")]
