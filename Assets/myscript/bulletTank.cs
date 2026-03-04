@@ -11,7 +11,8 @@ public enum BulletType
 {
     Normal,
     Tesla,
-    Plougher
+    Plougher,
+    rocket
 }
 
 public class bulletTank : MonoBehaviour
@@ -125,7 +126,7 @@ public class bulletTank : MonoBehaviour
             }
 
             // ⚡ Tesla: gây stun cho enemy (không dùng hiệu ứng)
-            if (bulletType == BulletType.Plougher)
+            if (bulletType == BulletType.rocket)
             {
                 if (hitEnemy)
                 {

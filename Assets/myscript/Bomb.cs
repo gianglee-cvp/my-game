@@ -16,7 +16,7 @@ public class Bomb : MonoBehaviour
     public float homingAcceleration = 40f;
 
     [Header("Bomb Physics")]
-    public float bombMass = 1000f;
+    public float bombMass = 500f;
     public float bombDrag = 0.6f;
     public float bombAngularDrag = 2f;
     public float postContactSpeedMultiplier = 1.1f;
