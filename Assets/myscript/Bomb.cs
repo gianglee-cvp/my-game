@@ -25,10 +25,18 @@ public class Bomb : MonoBehaviour
     private Rigidbody rb;
     private bool isHoming = false;
     private bool isFuseStarted = false;
+    private bool shakeOnExplode = false;
+    private CameraFollow cameraFollow;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        Camera mainCam = Camera.main;
+        if (mainCam != null)
+            cameraFollow = mainCam.GetComponent<CameraFollow>();
+
+        if (cameraFollow == null)
+            cameraFollow = Object.FindFirstObjectByType<CameraFollow>();
     }
 
     private void FixedUpdate()
@@ -124,6 +132,7 @@ public class Bomb : MonoBehaviour
 
             if (!isFuseStarted)
             {
+                shakeOnExplode = true;
                 isFuseStarted = true;
                 StartCoroutine(ExplodeAfterContactFuse(hitObj));
             }
@@ -132,6 +141,7 @@ public class Bomb : MonoBehaviour
 
         if (hitObj.CompareTag("Enemy") || rootObj.CompareTag("Enemy"))
         {
+            shakeOnExplode = false;
             hasExploded = true;
             Explode(hitObj);
         }
@@ -171,6 +181,9 @@ public class Bomb : MonoBehaviour
     void Explode(GameObject target)
     {
         Debug.Log("Bomb Exploding on impact with: " + target.name);
+
+        if (shakeOnExplode && cameraFollow != null)
+            cameraFollow.Shake();
 
         if (explosionFX != null)
         {
