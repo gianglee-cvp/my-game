@@ -400,7 +400,9 @@ public class EnemyAI : MonoBehaviour
                 bombRb = bombObject.AddComponent<Rigidbody>();
 
             bombRb.isKinematic = false;
-            bombRb.useGravity = true;
+            bombRb.useGravity = false;
+
+            bombScript.LaunchAtTarget(player);
 
             // âœ… Bá» qua collision giá»¯a bom vÃ  enemy Ä‘Ã£ drop nÃ³
             // â†’ TrÃ¡nh bom ná»• ngay khi vá»«a tÃ¡ch ra khá»i enemy

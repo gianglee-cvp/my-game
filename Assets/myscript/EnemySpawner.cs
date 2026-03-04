@@ -32,15 +32,21 @@ public class EnemySpawner : MonoBehaviour
 
         for (int i = 0; i < amount; i++)
         {
-            // Đợi đến khi vị trí spawn trống
-            while (Physics.CheckSphere(spawnPoint.position, checkRadius, checkLayer))
+            if (i > 0)
             {
-                yield return null;
+                // Wait until spawn area is clear first.
+                while (Physics.CheckSphere(spawnPoint.position, checkRadius, checkLayer))
+                    yield return null;
+
+                // Only start spawn interval after area is clear.
+                yield return new WaitForSeconds(timeBetweenSpawn);
+
+                // Re-check after waiting in case something moved into spawn area.
+                while (Physics.CheckSphere(spawnPoint.position, checkRadius, checkLayer))
+                    yield return null;
             }
 
             SpawnEnemy();
-
-            yield return new WaitForSeconds(timeBetweenSpawn);
         }
 
         isSpawning = false;
@@ -51,12 +57,9 @@ public class EnemySpawner : MonoBehaviour
     {
         GameObject enemy = Instantiate(enemyPrefab, spawnPoint.position, spawnPoint.rotation);
 
-        // Gán spawner cho EnemyAI
         EnemyAI ai = enemy.GetComponent<EnemyAI>();
         if (ai != null)
-        {
             ai.mySpawner = this;
-        }
 
         enemiesAlive++;
     }
@@ -81,10 +84,10 @@ public class EnemySpawner : MonoBehaviour
         enemiesAlive--;
     }
 
-    // Hiển thị vùng kiểm tra trong Scene View
     void OnDrawGizmosSelected()
     {
-        if (spawnPoint == null) return;
+        if (spawnPoint == null)
+            return;
 
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(spawnPoint.position, checkRadius);

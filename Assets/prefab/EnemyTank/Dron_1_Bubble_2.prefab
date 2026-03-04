@@ -1983,6 +1983,14 @@ MonoBehaviour:
   explosionDamage: 50
   explosionFX: {fileID: 624466283325796619, guid: c2f87cdbc36a8458ba8feae3880f54d3, type: 3}
   explosionRadius: 5
+  contactFuse: 0.02
+  homingSpeed: 18
+  homingAcceleration: 40
+  bombMass: 1000
+  bombDrag: 0.6
+  bombAngularDrag: 2
+  postContactSpeedMultiplier: 1.1
+  contactPushImpulse: 900
 --- !u!135 &1998021491958727790
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -3276,7 +3284,7 @@ MonoBehaviour:
   player: {fileID: 0}
   moveSpeed: 12
   rotateSpeed: 5
-  detectionRange: 40
+  detectionRange: 60
   stopRange: 7.5
   shootRange: 6
   flyHeight: 7

@@ -82024,7 +82024,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1384793614
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -104485,7 +104485,7 @@ MonoBehaviour:
   spawnPoint: {fileID: 1408370116}
   startEnemyCount: 5
   timeBetweenWaves: 5
-  timeBetweenSpawn: 3
+  timeBetweenSpawn: 4
   checkRadius: 1.5
   checkLayer:
     serializedVersion: 2
@@ -119072,7 +119072,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &2092828612
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -120811,6 +120811,10 @@ PrefabInstance:
       value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 2362561637911097235, guid: e83ecbcd769be4550af0ad9b4d51a02c, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2362561637911097235, guid: e83ecbcd769be4550af0ad9b4d51a02c, type: 3}
       propertyPath: stopRange
       value: 7.5
       objectReference: {fileID: 0}
@@ -120860,7 +120864,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8831572787063034734, guid: e83ecbcd769be4550af0ad9b4d51a02c, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -120916,16 +120920,24 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 690990719737098093, guid: 74fb9d8b7178c704aaabb6fac8338ce5, type: 3}
+      propertyPath: m_Size.y
+      value: 1.6425676
+      objectReference: {fileID: 0}
+    - target: {fileID: 690990719737098093, guid: 74fb9d8b7178c704aaabb6fac8338ce5, type: 3}
       propertyPath: m_Size.z
       value: 2.0505154
       objectReference: {fileID: 0}
     - target: {fileID: 690990719737098093, guid: 74fb9d8b7178c704aaabb6fac8338ce5, type: 3}
       propertyPath: m_Center.x
-      value: 1.4940065e-15
+      value: 1.4940069e-15
+      objectReference: {fileID: 0}
+    - target: {fileID: 690990719737098093, guid: 74fb9d8b7178c704aaabb6fac8338ce5, type: 3}
+      propertyPath: m_Center.y
+      value: 0.8212838
       objectReference: {fileID: 0}
     - target: {fileID: 690990719737098093, guid: 74fb9d8b7178c704aaabb6fac8338ce5, type: 3}
       propertyPath: m_Center.z
-      value: 0.3042692
+      value: 0.30426913
       objectReference: {fileID: 0}
     - target: {fileID: 1640136270806370849, guid: 74fb9d8b7178c704aaabb6fac8338ce5, type: 3}
       propertyPath: m_IsActive
