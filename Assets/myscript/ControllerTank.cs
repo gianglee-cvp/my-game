@@ -120,6 +120,26 @@ public class ControllerTank : MonoBehaviour
             nextFireTime = Time.time + 0.5f; // fallback
         }
     }
+    void SwitchWeapon()
+    {
+        if (bulletPrefabs == null || bulletPrefabs.Length == 0)
+            return;
+
+        float scroll = Input.GetAxis("Mouse ScrollWheel");
+
+        if (scroll > 0f)
+        {
+            currentBulletIndex++;
+            if (currentBulletIndex >= bulletPrefabs.Length)
+                currentBulletIndex = 0;
+        }
+        else if (scroll < 0f)
+        {
+            currentBulletIndex--;
+            if (currentBulletIndex < 0)
+                currentBulletIndex = bulletPrefabs.Length - 1;
+        }
+    }
 
     void Update()
     {
@@ -127,6 +147,7 @@ public class ControllerTank : MonoBehaviour
         Rotate();
         RotateTower();
         Fire();
+        SwitchWeapon();
         UpdateShield();
     }
 

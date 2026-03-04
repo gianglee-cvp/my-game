@@ -9,7 +9,8 @@ public enum Team
 public enum BulletType
 {
     Normal,
-    Tesla
+    Tesla,
+    Plougher
 }
 
 public class bulletTank : MonoBehaviour
@@ -87,6 +88,10 @@ public class bulletTank : MonoBehaviour
             }
 
             // ⚡ Tesla: gây stun cho enemy (không dùng hiệu ứng)
+            if (bulletType == BulletType.Plougher)
+            {
+                return ; 
+            }
             if (bulletType == BulletType.Tesla)
             {
                 EnemyAI enemy = other.GetComponentInParent<EnemyAI>();
