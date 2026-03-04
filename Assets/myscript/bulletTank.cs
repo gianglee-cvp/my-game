@@ -1,4 +1,5 @@
 using UnityEngine;
+using ProceduralForceField;
 
 public enum Team
 {
@@ -80,6 +81,12 @@ public class bulletTank : MonoBehaviour
         if (other.CompareTag("Shield"))
         {
             Transform root = other.transform.root;
+            ProceduralForceFieldOverlay overlay = other.GetComponentInParent<ProceduralForceFieldOverlay>();
+            if (overlay != null)
+            {
+                Vector3 hitPoint = other.ClosestPoint(transform.position);
+                overlay.Trigger(hitPoint);
+            }
 
             // Nếu đạn cùng phe với shield → bỏ qua
             if ((bulletTeam == Team.Player && root.CompareTag("Player")) ||

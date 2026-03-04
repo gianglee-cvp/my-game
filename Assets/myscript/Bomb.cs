@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using ProceduralForceField;
 
 public class Bomb : MonoBehaviour
 {
@@ -119,6 +120,17 @@ public class Bomb : MonoBehaviour
         {
             if (!fromPhysicsCollision)
                 return;
+
+            ProceduralForceFieldOverlay overlay = hitObj.GetComponentInParent<ProceduralForceFieldOverlay>();
+            if (overlay == null)
+                overlay = rootObj.GetComponentInChildren<ProceduralForceFieldOverlay>();
+
+            if (overlay != null)
+            {
+                Collider hitCollider = hitObj.GetComponent<Collider>();
+                Vector3 hitPoint = hitCollider != null ? hitCollider.ClosestPoint(transform.position) : transform.position;
+                overlay.Trigger(hitPoint);
+            }
 
             isHoming = false;
             if (rb != null)
