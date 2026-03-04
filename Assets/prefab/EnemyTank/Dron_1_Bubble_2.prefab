@@ -3274,7 +3274,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI
   type: 1
   player: {fileID: 0}
-  moveSpeed: 8
+  moveSpeed: 12
   rotateSpeed: 5
   detectionRange: 40
   stopRange: 7.5
@@ -3287,3 +3287,4 @@ MonoBehaviour:
   ShootFX: []
   mySpawner: {fileID: 0}
   stunEffectPoints: []
+  knockbackResistance: 1

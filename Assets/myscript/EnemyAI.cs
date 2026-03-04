@@ -44,6 +44,12 @@ public class EnemyAI : MonoBehaviour
     private float stunTimer = 0f;
     private readonly List<ParticleSystem> stunEffectInstances = new List<ParticleSystem>();
 
+    [Header("Knockback")]
+    public float knockbackResistance = 1f;
+    private bool isKnockedBack = false;
+    private float knockbackTimer = 0f;
+    private Vector3 knockbackVelocity = Vector3.zero;
+
     void Start()
     {
 
@@ -83,6 +89,26 @@ public class EnemyAI : MonoBehaviour
         }
 
         if (player == null) return;
+
+        if (isKnockedBack)
+        {
+            if (agent != null && agent.enabled && agent.isOnNavMesh)
+            {
+                agent.isStopped = true;
+                agent.Move(knockbackVelocity * Time.deltaTime);
+            }
+
+            knockbackTimer -= Time.deltaTime;
+            if (knockbackTimer <= 0f)
+            {
+                isKnockedBack = false;
+                knockbackVelocity = Vector3.zero;
+
+                if (agent != null && agent.enabled && agent.isOnNavMesh && !isStunned)
+                    agent.isStopped = false;
+            }
+            return;
+        }
 
         // âš¡ Äang bá»‹ stun: Ä‘áº¿m ngÆ°á»£c vÃ  cháº·n má»i hÃ nh Ä‘á»™ng
         if (isStunned)
@@ -130,6 +156,24 @@ public class EnemyAI : MonoBehaviour
     void FixedUpdate()
     {
         if (player == null) return;
+
+        if (isKnockedBack)
+        {
+            if (rb != null)
+            {
+                rb.MovePosition(rb.position + knockbackVelocity * Time.fixedDeltaTime);
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
+
+            knockbackTimer -= Time.fixedDeltaTime;
+            if (knockbackTimer <= 0f)
+            {
+                isKnockedBack = false;
+                knockbackVelocity = Vector3.zero;
+            }
+            return;
+        }
 
         if (isStunned) 
         {
@@ -320,6 +364,24 @@ public class EnemyAI : MonoBehaviour
         }
 
         Debug.Log(gameObject.name + " bá»‹ stun trong " + duration + " giÃ¢y");
+    }
+    public void Knockback(Vector3 direction, float force, float duration)
+    {
+        direction.y = 0f;
+        if (direction.sqrMagnitude < 0.001f) return;
+
+        float finalResistance = Mathf.Max(0.01f, knockbackResistance);
+        Vector3 finalDirection = direction.normalized;
+
+        knockbackVelocity = finalDirection * (force / finalResistance);
+        knockbackTimer = duration;
+        isKnockedBack = true;
+
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
+        {
+            agent.isStopped = true;
+            agent.velocity = Vector3.zero;
+        }
     }
 
     void DropBomb()

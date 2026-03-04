@@ -35,6 +35,10 @@ public class bulletTank : MonoBehaviour
     public float stunDuration = 5f;
     public ParticleSystem stunEffect;
 
+    [Header("Plougher Settings")]
+    public float knockbackForce = 18f;
+    public float knockbackDuration = 1f;
+
     [Header("Info")]
     public string bulletName = "Tank Bullet";
 
@@ -90,7 +94,18 @@ public class bulletTank : MonoBehaviour
             // ⚡ Tesla: gây stun cho enemy (không dùng hiệu ứng)
             if (bulletType == BulletType.Plougher)
             {
-                return ; 
+                if (other.CompareTag("Enemy"))
+                {
+                    EnemyAI enemy = other.GetComponentInParent<EnemyAI>();
+                    if (enemy != null)
+                    {
+                        enemy.Stun(stunDuration, null);
+                        Vector3 knockbackDir = transform.forward;
+                        enemy.Knockback(knockbackDir, knockbackForce, knockbackDuration);
+                    }
+                }
+
+                return;
             }
             if (bulletType == BulletType.Tesla)
             {
