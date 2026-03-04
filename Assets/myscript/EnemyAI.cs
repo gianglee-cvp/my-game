@@ -248,7 +248,6 @@ public class EnemyAI : MonoBehaviour
     void BomberLogic(float distance)
     {
         RotateToPlayerRB();
-        Debug.Log("Distance to player: " + distance);
         if (distance <= stopRange)
         {
             DropBomb();

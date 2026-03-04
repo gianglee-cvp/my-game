@@ -75,6 +75,25 @@ public class bulletTank : MonoBehaviour
         bool hitEnemy = other.CompareTag("Enemy") || hitRoot.CompareTag("Enemy");
 
         // =============================
+        // HIT SHIELD
+        // =============================
+        if (other.CompareTag("Shield"))
+        {
+            Transform root = other.transform.root;
+
+            // Nếu đạn cùng phe với shield → bỏ qua
+            if ((bulletTeam == Team.Player && root.CompareTag("Player")) ||
+                (bulletTeam == Team.Enemy && root.CompareTag("Enemy")))
+            {
+                return;
+            }
+
+            SpawnImpactEffect();
+            DestroyBullet();
+            return;
+        }
+
+        // =============================
         // HIT PLAYER / ENEMY
         // =============================
         if (hitPlayer || hitEnemy)
@@ -123,24 +142,6 @@ public class bulletTank : MonoBehaviour
                 }
             }
 
-            DestroyBullet();
-        }
-
-        // =============================
-        // HIT SHIELD
-        // =============================
-        else if (other.CompareTag("Shield"))
-        {
-            Transform root = other.transform.root;
-
-            // Nếu đạn cùng phe với shield → bỏ qua
-            if ((bulletTeam == Team.Player && root.CompareTag("Player")) ||
-                (bulletTeam == Team.Enemy && root.CompareTag("Enemy")))
-            {
-                return;
-            }
-
-            SpawnImpactEffect();
             DestroyBullet();
         }
 
