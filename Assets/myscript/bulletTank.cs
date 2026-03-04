@@ -70,15 +70,18 @@ public class bulletTank : MonoBehaviour
     void OnTriggerEnter(Collider other)
     {
         Debug.Log($"[{bulletName}] hit {other.gameObject.tag}");
+        Transform hitRoot = other.transform.root;
+        bool hitPlayer = other.CompareTag("Player") || hitRoot.CompareTag("Player");
+        bool hitEnemy = other.CompareTag("Enemy") || hitRoot.CompareTag("Enemy");
 
         // =============================
         // HIT PLAYER / ENEMY
         // =============================
-        if (other.CompareTag("Player") || other.CompareTag("Enemy"))
+        if (hitPlayer || hitEnemy)
         {
             // ❌ Không gây damage cùng phe
-            if ((bulletTeam == Team.Player && other.CompareTag("Player")) ||
-                (bulletTeam == Team.Enemy && other.CompareTag("Enemy")))
+            if ((bulletTeam == Team.Player && hitPlayer) ||
+                (bulletTeam == Team.Enemy && hitEnemy))
             {
                 return;
             }
@@ -86,6 +89,10 @@ public class bulletTank : MonoBehaviour
             SpawnImpactEffect();
 
             HP hp = other.GetComponent<HP>();
+            if (hp == null)
+            {
+                hp = other.GetComponentInParent<HP>();
+            }
             if (hp != null)
             {
                 hp.TakeDamage(damage);
@@ -94,12 +101,12 @@ public class bulletTank : MonoBehaviour
             // ⚡ Tesla: gây stun cho enemy (không dùng hiệu ứng)
             if (bulletType == BulletType.Plougher)
             {
-                if (other.CompareTag("Enemy"))
+                if (hitEnemy)
                 {
                     EnemyAI enemy = other.GetComponentInParent<EnemyAI>();
                     if (enemy != null)
                     {
-                        enemy.Stun(stunDuration, null);
+                        enemy.Stun(knockbackDuration, null);
                         Vector3 knockbackDir = transform.forward;
                         enemy.Knockback(knockbackDir, knockbackForce, knockbackDuration);
                     }
