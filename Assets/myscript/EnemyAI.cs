@@ -46,10 +46,18 @@ public class EnemyAI : MonoBehaviour
 
     void Start()
     {
-        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-        if (playerObj != null)
-            player = playerObj.transform;
 
+        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+        Debug.Log("Player object: " + playerObj.name);
+        if (playerObj == null)
+        {
+            Debug.LogError("❌ KHÔNG TÌM THẤY PLAYER TRONG SCENE!");
+        }
+        else
+        {
+            Debug.Log("✅ TÌM THẤY PLAYER: " + playerObj.name);
+            player = playerObj.transform;
+        }
         if (type == EnemyType.Shooter)
         {
             agent = GetComponent<NavMeshAgent>();
@@ -196,7 +204,7 @@ public class EnemyAI : MonoBehaviour
     void BomberLogic(float distance)
     {
         RotateToPlayerRB();
-
+        Debug.Log("Distance to player: " + distance);
         if (distance <= stopRange)
         {
             DropBomb();

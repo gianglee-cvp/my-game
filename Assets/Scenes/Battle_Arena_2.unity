@@ -120578,6 +120578,14 @@ PrefabInstance:
       propertyPath: player
       value: 
       objectReference: {fileID: 2068046744}
+    - target: {fileID: 2362561637911097235, guid: e83ecbcd769be4550af0ad9b4d51a02c, type: 3}
+      propertyPath: flyHeight
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 2362561637911097235, guid: e83ecbcd769be4550af0ad9b4d51a02c, type: 3}
+      propertyPath: stopRange
+      value: 7.5
+      objectReference: {fileID: 0}
     - target: {fileID: 8818473903100454799, guid: e83ecbcd769be4550af0ad9b4d51a02c, type: 3}
       propertyPath: m_LocalPosition.x
       value: -22.06
@@ -120682,6 +120690,10 @@ PrefabInstance:
     - target: {fileID: 3683689175431432772, guid: 74fb9d8b7178c704aaabb6fac8338ce5, type: 3}
       propertyPath: m_Name
       value: Sniper_Tank_1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3683689175431432772, guid: 74fb9d8b7178c704aaabb6fac8338ce5, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
