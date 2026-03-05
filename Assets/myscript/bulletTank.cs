@@ -34,12 +34,16 @@ public class bulletTank : MonoBehaviour
     public ParticleSystem effectImpact;
 
     [Header("Tesla Settings")]
-    public float stunDuration = 5f;
+    public float stunDuration = 3f;
     public ParticleSystem stunEffect;
 
     [Header("Plougher Settings")]
-    public float knockbackForce = 18f;
+    public float knockbackForce = 5f;
     public float knockbackDuration = 1f;
+
+    [Header("Player Knockback Tuning")]
+    [Range(0f, 1f)] public float playerKnockbackForceMultiplier = 0.35f;
+    [Range(0f, 1f)] public float playerKnockbackDurationMultiplier = 0.5f;
 
     [Header("Info")]
     public string bulletName = "Tank Bullet";
@@ -52,7 +56,7 @@ public class bulletTank : MonoBehaviour
 
         if (bulletName == "plougher_bullet")
         {
-            effectScale = 2f;
+            effectScale = 3f;
         }
 
         Debug.Log("position bullet: " + transform.position);
@@ -75,6 +79,7 @@ public class bulletTank : MonoBehaviour
         Transform hitRoot = other.transform.root;
         bool hitPlayer = other.CompareTag("Player") || hitRoot.CompareTag("Player");
         bool hitEnemy = other.CompareTag("Enemy") || hitRoot.CompareTag("Enemy");
+        bool hitBoss = other.CompareTag("Boss") || hitRoot.CompareTag("Boss");
 
         // =============================
         // HIT SHIELD
@@ -91,7 +96,7 @@ public class bulletTank : MonoBehaviour
 
             // Nếu đạn cùng phe với shield → bỏ qua
             if ((bulletTeam == Team.Player && root.CompareTag("Player")) ||
-                (bulletTeam == Team.Enemy && root.CompareTag("Enemy")))
+                (bulletTeam == Team.Enemy && (root.CompareTag("Enemy") || root.CompareTag("Boss"))))
             {
                 return;
             }
@@ -104,11 +109,22 @@ public class bulletTank : MonoBehaviour
         // =============================
         // HIT PLAYER / ENEMY
         // =============================
-        if (hitPlayer || hitEnemy)
+        if (hitPlayer || hitEnemy || hitBoss)
         {
+            if (hitPlayer)
+            {
+                ControllerTank playerController = other.GetComponentInParent<ControllerTank>();
+                if (playerController != null && playerController.isShield)
+                {
+                    SpawnImpactEffect();
+                    DestroyBullet();
+                    return;
+                }
+            }
+
             // ❌ Không gây damage cùng phe
             if ((bulletTeam == Team.Player && hitPlayer) ||
-                (bulletTeam == Team.Enemy && hitEnemy))
+                (bulletTeam == Team.Enemy && (hitEnemy || hitBoss)))
             {
                 return;
             }
@@ -128,7 +144,19 @@ public class bulletTank : MonoBehaviour
             // ⚡ Tesla: gây stun cho enemy (không dùng hiệu ứng)
             if (bulletType == BulletType.rocket)
             {
-                if (hitEnemy)
+                if (hitPlayer)
+                {
+                    ControllerTank playerController = other.GetComponentInParent<ControllerTank>();
+                    if (playerController != null)
+                    {
+                        float playerKnockbackForce = knockbackForce * playerKnockbackForceMultiplier;
+                        float playerKnockbackDuration = knockbackDuration * playerKnockbackDurationMultiplier;
+
+                        playerController.Stun(playerKnockbackDuration, null);
+                        playerController.Knockback(transform.forward, playerKnockbackForce, playerKnockbackDuration);
+                    }
+                }
+                else if (hitEnemy || hitBoss)
                 {
                     EnemyAI enemy = other.GetComponentInParent<EnemyAI>();
                     if (enemy != null)
@@ -137,16 +165,49 @@ public class bulletTank : MonoBehaviour
                         Vector3 knockbackDir = transform.forward;
                         enemy.Knockback(knockbackDir, knockbackForce, knockbackDuration);
                     }
+                    else
+                    {
+                        enemyboss1 boss = other.GetComponentInParent<enemyboss1>();
+                        if (boss != null)
+                        {
+                            float bossStunDuration = knockbackDuration * 0.5f;
+                            float bossKnockbackForce = knockbackForce * 0.5f;
+                            float bossKnockbackDuration = knockbackDuration * 0.5f;
+
+                            boss.Stun(bossStunDuration, null);
+                            Vector3 knockbackDir = transform.forward;
+                            boss.Knockback(knockbackDir, bossKnockbackForce, bossKnockbackDuration);
+                        }
+                    }
                 }
 
                 return;
             }
             if (bulletType == BulletType.Tesla)
             {
-                EnemyAI enemy = other.GetComponentInParent<EnemyAI>();
-                if (enemy != null)
+                if (hitPlayer)
                 {
-                    enemy.Stun(stunDuration , stunEffect);
+                    ControllerTank playerController = other.GetComponentInParent<ControllerTank>();
+                    if (playerController != null)
+                    {
+                        playerController.Stun(stunDuration, stunEffect);
+                    }
+                }
+                else
+                {
+                    EnemyAI enemy = other.GetComponentInParent<EnemyAI>();
+                    if (enemy != null)
+                    {
+                        enemy.Stun(stunDuration , stunEffect);
+                    }
+                    else
+                    {
+                        enemyboss1 boss = other.GetComponentInParent<enemyboss1>();
+                        if (boss != null)
+                        {
+                            boss.Stun(stunDuration * 0.5f, stunEffect);
+                        }
+                    }
                 }
             }
 

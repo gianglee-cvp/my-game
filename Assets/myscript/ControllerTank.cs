@@ -32,6 +32,18 @@ public class ControllerTank : MonoBehaviour
     public bool isShield = false;
     private float shieldTimer = 0f;
 
+    [Header("Debuff (from enemy bullets)")]
+    public Transform[] stunEffectPoints;
+    public float knockbackResistance = 1f;
+
+    private bool isStunned = false;
+    private float stunTimer = 0f;
+    private readonly System.Collections.Generic.List<ParticleSystem> stunEffectInstances =
+        new System.Collections.Generic.List<ParticleSystem>();
+    private bool isKnockedBack = false;
+    private float knockbackTimer = 0f;
+    private Vector3 knockbackVelocity = Vector3.zero;
+
     void Start()
     {
         TankEngine = GetComponent<Rigidbody>();
@@ -143,12 +155,44 @@ public class ControllerTank : MonoBehaviour
 
     void Update()
     {
+        UpdateStatusEffects();
+        if (isKnockedBack || isStunned)
+        {
+            UpdateShield();
+            return;
+        }
+
         Move();
         Rotate();
         RotateTower();
         Fire();
         SwitchWeapon();
         UpdateShield();
+    }
+
+    void UpdateStatusEffects()
+    {
+        if (isKnockedBack)
+        {
+            TankEngine.MovePosition(TankEngine.position + knockbackVelocity * Time.deltaTime);
+
+            knockbackTimer -= Time.deltaTime;
+            if (knockbackTimer <= 0f)
+            {
+                isKnockedBack = false;
+                knockbackVelocity = Vector3.zero;
+            }
+        }
+
+        if (isStunned)
+        {
+            stunTimer -= Time.deltaTime;
+            if (stunTimer <= 0f)
+            {
+                isStunned = false;
+                ClearStunEffects();
+            }
+        }
     }
 
     void UpdateShield()
@@ -181,6 +225,7 @@ public class ControllerTank : MonoBehaviour
     {
         isShield = true;
         shieldTimer = duration;
+        ClearAllDebuffs();
 
         if (shieldObject != null)
         {
@@ -193,6 +238,71 @@ public class ControllerTank : MonoBehaviour
         }
 
         Debug.Log("Player bật shield trong " + duration + " giây");
+    }
+
+    public void Stun(float duration, ParticleSystem stunEffect)
+    {
+        if (duration <= 0f) return;
+        if (isShield) return;
+
+        isStunned = true;
+        stunTimer = Mathf.Max(stunTimer, duration);
+
+        if (stunEffect != null && stunEffectPoints != null && stunEffectPoints.Length > 0)
+        {
+            for (int i = 0; i < stunEffectPoints.Length; i++)
+            {
+                Transform point = stunEffectPoints[i];
+                if (point == null) continue;
+
+                ParticleSystem fx = Instantiate(stunEffect, point.position, point.rotation, point);
+                var main = fx.main;
+                main.loop = true;
+                fx.Play();
+                stunEffectInstances.Add(fx);
+            }
+        }
+    }
+
+    public void Knockback(Vector3 direction, float force, float duration)
+    {
+        if (isShield) return;
+
+        direction.y = 0f;
+        if (direction.sqrMagnitude < 0.001f) return;
+        if (duration <= 0f || force <= 0f) return;
+
+        float finalResistance = Mathf.Max(0.01f, knockbackResistance);
+        knockbackVelocity = direction.normalized * (force / finalResistance);
+        knockbackTimer = Mathf.Max(knockbackTimer, duration);
+        isKnockedBack = true;
+    }
+
+    void ClearStunEffects()
+    {
+        for (int i = 0; i < stunEffectInstances.Count; i++)
+        {
+            ParticleSystem fx = stunEffectInstances[i];
+            if (fx == null) continue;
+            fx.Stop();
+            Destroy(fx.gameObject);
+        }
+        stunEffectInstances.Clear();
+    }
+
+    void ClearAllDebuffs()
+    {
+        isStunned = false;
+        stunTimer = 0f;
+        isKnockedBack = false;
+        knockbackTimer = 0f;
+        knockbackVelocity = Vector3.zero;
+        ClearStunEffects();
+    }
+
+    void OnDestroy()
+    {
+        ClearStunEffects();
     }
 
 }
