@@ -23,6 +23,7 @@ public class EnemyAI : MonoBehaviour
 
     [Header("Attack")]
     public GameObject bullet;
+    [Min(0)] public int bulletPrewarmCount = 16;
     public Transform shootElement;
     public ParticleSystem[] ShootFX;
 
@@ -35,6 +36,7 @@ public class EnemyAI : MonoBehaviour
 
     private NavMeshAgent agent;
     private Rigidbody rb;
+    [SerializeField] private bool enableDebugLogs = false;
 
     // ================= STUN =================
     [Header("Stun Effect")]
@@ -49,19 +51,30 @@ public class EnemyAI : MonoBehaviour
     private bool isKnockedBack = false;
     private float knockbackTimer = 0f;
     private Vector3 knockbackVelocity = Vector3.zero;
+    private Vector3 baseLocalScale;
+
+    void Awake()
+    {
+        baseLocalScale = transform.localScale;
+    }
+
+    void OnEnable()
+    {
+        ApplyGlobalScale();
+        ResetRuntimeState();
+    }
 
     void Start()
     {
 
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-        Debug.Log("Player object: " + playerObj.name);
         if (playerObj == null)
         {
-            Debug.LogError("❌ KHÔNG TÌM THẤY PLAYER TRONG SCENE!");
+            Debug.LogError("Player object not found in scene.");
         }
         else
         {
-            Debug.Log("✅ TÌM THẤY PLAYER: " + playerObj.name);
+            LogDebug("Found player: " + playerObj.name);
             player = playerObj.transform;
         }
         if (type == EnemyType.Shooter)
@@ -70,6 +83,7 @@ public class EnemyAI : MonoBehaviour
             agent.speed = moveSpeed;
             agent.stoppingDistance = stopRange;
             agent.updateRotation = false;
+            ProjectilePool.Prewarm(bullet, bulletPrewarmCount);
         }
         else if (type == EnemyType.Bomber)
         {
@@ -78,13 +92,15 @@ public class EnemyAI : MonoBehaviour
             isAscending = true;         // Báº¯t Ä‘áº§u bay lÃªn
             bomberSpawnTime = Time.time;
         }
+
+        ResetRuntimeState();
     }
 
     void Update()
     {
         if (type == EnemyType.Bomber && Time.time - bomberSpawnTime >= bomberLifetime)
         {
-            Destroy(gameObject);
+            EnemyPool.Despawn(gameObject);
             return;
         }
 
@@ -132,7 +148,7 @@ public class EnemyAI : MonoBehaviour
                         ParticleSystem effect = stunEffectInstances[i];
                         if (effect == null) continue;
                         effect.Stop();
-                        Destroy(effect.gameObject);
+                        EffectPool.Despawn(effect);
                     }
                     stunEffectInstances.Clear();
                 }
@@ -310,17 +326,21 @@ public class EnemyAI : MonoBehaviour
             ShootFX[i].Play();
         }
 
-        GameObject bulletInstance = Instantiate(
+        GameObject bulletInstance = ProjectilePool.Spawn(
             bullet,
             shootElement.position,
             shootElement.rotation
         );
 
         bulletTank bulletScript = bulletInstance.GetComponentInChildren<bulletTank>();
-        bulletScript.bulletTeam = Team.Enemy;
         if (bulletScript != null)
         {
+            bulletScript.bulletTeam = Team.Enemy;
             nextFireTime = Time.time + bulletScript.fireCooldown;
+        }
+        else
+        {
+            nextFireTime = Time.time + 0.5f;
         }
     }
 
@@ -346,7 +366,7 @@ public class EnemyAI : MonoBehaviour
                 Transform point = stunEffectPoints[i];
                 if (point == null) continue;
 
-                ParticleSystem effectInstance = Instantiate(
+                ParticleSystem effectInstance = EffectPool.Spawn(
                     stunEffect,
                     point.position,
                     point.rotation,
@@ -362,7 +382,7 @@ public class EnemyAI : MonoBehaviour
             }
         }
 
-        Debug.Log(gameObject.name + " bá»‹ stun trong " + duration + " giÃ¢y");
+        LogDebug(gameObject.name + " stunned for " + duration + " seconds");
     }
     public void Knockback(Vector3 direction, float force, float duration)
     {
@@ -414,13 +434,70 @@ public class EnemyAI : MonoBehaviour
                     Physics.IgnoreCollision(bombCol, ec, true);
             }
 
-            Destroy(gameObject);
+            EnemyPool.Despawn(gameObject);
         }
     }
 
-    void OnDestroy()
+    private void ResetRuntimeState()
     {
-        if (mySpawner != null)
-            mySpawner.EnemyDied();
+        nextFireTime = 0f;
+        hasActed = false;
+        isKnockedBack = false;
+        knockbackTimer = 0f;
+        knockbackVelocity = Vector3.zero;
+        isStunned = false;
+        stunTimer = 0f;
+        ClearStunEffects();
+
+        if (type == EnemyType.Bomber)
+        {
+            isAscending = true;
+            bomberSpawnTime = Time.time;
+            if (rb == null) rb = GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.useGravity = false;
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
+        }
+
+        if (type == EnemyType.Shooter)
+        {
+            if (agent == null) agent = GetComponent<NavMeshAgent>();
+            if (agent != null && agent.enabled && agent.isOnNavMesh)
+            {
+                agent.isStopped = false;
+                agent.velocity = Vector3.zero;
+            }
+        }
+    }
+
+    private void ClearStunEffects()
+    {
+        if (stunEffectInstances.Count == 0) return;
+
+        for (int i = 0; i < stunEffectInstances.Count; i++)
+        {
+            ParticleSystem effect = stunEffectInstances[i];
+            if (effect == null) continue;
+            effect.Stop();
+            EffectPool.Despawn(effect);
+        }
+        stunEffectInstances.Clear();
+    }
+
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    private void LogDebug(string message)
+    {
+        if (enableDebugLogs)
+        {
+            Debug.Log(message);
+        }
+    }
+
+    private void ApplyGlobalScale()
+    {
+        transform.localScale = baseLocalScale * GlobalScaleManager.GetScale(GlobalScaleCategory.Enemy);
     }
 }

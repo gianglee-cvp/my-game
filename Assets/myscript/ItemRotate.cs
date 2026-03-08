@@ -11,6 +11,17 @@ public class Spin : MonoBehaviour
 
     public ItemType itemType;
     public float rotateSpeed = 100f;
+    private Vector3 baseLocalScale;
+
+    void Awake()
+    {
+        baseLocalScale = transform.localScale;
+    }
+
+    void OnEnable()
+    {
+        transform.localScale = baseLocalScale * GlobalScaleManager.GetScale(GlobalScaleCategory.Pickup);
+    }
 
     void Update()
     {

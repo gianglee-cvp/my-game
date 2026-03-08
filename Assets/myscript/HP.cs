@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class HP : MonoBehaviour
 {
+    [SerializeField] private bool enableDebugLogs = false;
     [Header("Health Settings")]
     public float maxHP = 100f;
     [SerializeField] private float currentHP;
@@ -18,13 +19,19 @@ public class HP : MonoBehaviour
         NotifyHealthChanged();
     }
 
+    void OnEnable()
+    {
+        currentHP = maxHP;
+        NotifyHealthChanged();
+    }
+
     public void TakeDamage(float damage)
     {
         if (damage <= 0f)
             return;
 
         currentHP = Mathf.Max(0f, currentHP - damage);
-        Debug.Log(gameObject.name + " HP: " + currentHP);
+        LogDebug(gameObject.name + " HP: " + currentHP);
         NotifyHealthChanged();
 
         if (currentHP <= 0f)
@@ -37,7 +44,7 @@ public class HP : MonoBehaviour
             return;
 
         currentHP = Mathf.Min(maxHP, currentHP + amount);
-        Debug.Log(gameObject.name + " HP sau khi hoi: " + currentHP);
+        LogDebug(gameObject.name + " HP sau khi hoi: " + currentHP);
         NotifyHealthChanged();
     }
 
@@ -48,7 +55,23 @@ public class HP : MonoBehaviour
 
     void Die()
     {
-        Debug.Log(gameObject.name + " Destroyed!");
+        LogDebug(gameObject.name + " Destroyed!");
+        PooledEnemy pooledEnemy = GetComponent<PooledEnemy>();
+        if (pooledEnemy != null)
+        {
+            EnemyPool.Despawn(gameObject);
+            return;
+        }
+
         Destroy(gameObject);
+    }
+
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    private void LogDebug(string message)
+    {
+        if (enableDebugLogs)
+        {
+            Debug.Log(message);
+        }
     }
 }

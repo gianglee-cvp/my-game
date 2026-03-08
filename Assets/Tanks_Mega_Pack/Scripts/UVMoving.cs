@@ -7,6 +7,7 @@ public class UVMoving : MonoBehaviour {
 	// скорость юви анимации
 	float offset;
 	Renderer rend;
+    Material cachedMaterial;
     Vector3 OldPosition;
 	Vector3 NewPosition;
 	public GameObject MainObject;
@@ -16,6 +17,11 @@ public class UVMoving : MonoBehaviour {
 
 	{
 		rend = GetComponent<Renderer>();
+        if (rend != null)
+        {
+            // Cache material once to avoid repeated material-instancing work in Update.
+            cachedMaterial = rend.material;
+        }
 	}
 
 	void Update()
@@ -27,11 +33,11 @@ public class UVMoving : MonoBehaviour {
 		var Direction = NewPosition - OldPosition;
 		var Dot = RotationBase.InverseTransformDirection(Direction).z;
 
-		if (Direction.magnitude > 0.01f)
+		if (cachedMaterial != null && Direction.magnitude > 0.01f)
 
 		{
-			float offset = rend.material.mainTextureOffset.y + Time.deltaTime * scrollSpeed * Mathf.Sign(Dot);
-			rend.material.mainTextureOffset = new Vector2(0, offset);
+			float offset = cachedMaterial.mainTextureOffset.y + Time.deltaTime * scrollSpeed * Mathf.Sign(Dot);
+			cachedMaterial.mainTextureOffset = new Vector2(0, offset);
 		}
 
 		OldPosition = NewPosition;

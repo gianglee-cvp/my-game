@@ -15,7 +15,7 @@ public class Bomb : MonoBehaviour
     public float homingSpeed = 18f;
     public float homingAcceleration = 40f;
 
-    [Header("Bomb Physics")]
+    [Header("Bomb Physics")] 
     public float bombMass = 500f;
     public float bombDrag = 0.6f;
     public float bombAngularDrag = 2f;
@@ -28,9 +28,11 @@ public class Bomb : MonoBehaviour
     private bool isFuseStarted = false;
     private bool shakeOnExplode = false;
     private CameraFollow cameraFollow;
+    private Vector3 baseLocalScale;
 
     private void Awake()
     {
+        baseLocalScale = transform.localScale;
         rb = GetComponent<Rigidbody>();
         Camera mainCam = Camera.main;
         if (mainCam != null)
@@ -38,6 +40,11 @@ public class Bomb : MonoBehaviour
 
         if (cameraFollow == null)
             cameraFollow = Object.FindFirstObjectByType<CameraFollow>();
+    }
+
+    private void OnEnable()
+    {
+        transform.localScale = baseLocalScale * GlobalScaleManager.GetScale(GlobalScaleCategory.Bomb);
     }
 
     private void FixedUpdate()
@@ -199,8 +206,9 @@ public class Bomb : MonoBehaviour
 
         if (explosionFX != null)
         {
-            Instantiate(explosionFX, transform.position, Quaternion.identity)
-                .transform.localScale *= explosionRadius;
+            GameObject fx = Instantiate(explosionFX, transform.position, Quaternion.identity);
+            float effectScale = explosionRadius * GlobalScaleManager.GetScale(GlobalScaleCategory.Effect);
+            fx.transform.localScale *= effectScale;
         }
 
         Collider[] hitColliders = Physics.OverlapSphere(

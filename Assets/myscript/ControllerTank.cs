@@ -1,9 +1,10 @@
-using UnityEngine;
+﻿using UnityEngine;
 using ProceduralForceField;
 
 
 public class ControllerTank : MonoBehaviour
 {
+    [SerializeField] private bool enableDebugLogs = false;
     public GameObject shieldObject;
     private ProceduralForceFieldOverlay shieldOverlay;
 
@@ -19,16 +20,17 @@ public class ControllerTank : MonoBehaviour
 
     [Header("Bullet System")]
     public GameObject[] bulletPrefabs;
+    [Min(0)] public int prewarmPerBulletPrefab = 24;
     [Range(0, 10)]
-    public int currentBulletIndex = 0; // chọn loại đạn trong Inspector
+    public int currentBulletIndex = 0; // chá»n loáº¡i Ä‘áº¡n trong Inspector
     public Transform shootElement;
 
     private float nextFireTime = 0f;
 
-    // Số coin nhặt được
+    // Sá»‘ coin nháº·t Ä‘Æ°á»£c
     public int coinCount = 0;
 
-    // Trạng thái khiên
+    // Tráº¡ng thÃ¡i khiÃªn
     public bool isShield = false;
     private float shieldTimer = 0f;
 
@@ -43,15 +45,36 @@ public class ControllerTank : MonoBehaviour
     private bool isKnockedBack = false;
     private float knockbackTimer = 0f;
     private Vector3 knockbackVelocity = Vector3.zero;
+    private Vector3 baseLocalScale;
+
+    void Awake()
+    {
+        baseLocalScale = transform.localScale;
+    }
 
     void Start()
     {
+        ApplyGlobalScale();
+
         TankEngine = GetComponent<Rigidbody>();
         if (shieldObject != null)
         {
             shieldOverlay = shieldObject.GetComponent<ProceduralForceFieldOverlay>();
-            shieldObject.SetActive(false); // ban đầu tắt
+            shieldObject.SetActive(false); // ban Ä‘áº§u táº¯t
         }
+
+        if (bulletPrefabs != null && prewarmPerBulletPrefab > 0)
+        {
+            for (int i = 0; i < bulletPrefabs.Length; i++)
+            {
+                ProjectilePool.Prewarm(bulletPrefabs[i], prewarmPerBulletPrefab);
+            }
+        }
+    }
+
+    void OnEnable()
+    {
+        ApplyGlobalScale();
     }
 
     void Move()
@@ -94,33 +117,33 @@ public class ControllerTank : MonoBehaviour
         if (!Input.GetMouseButtonDown(0)) return;
         if (Time.time < nextFireTime) return;
 
-        // ✅ Kiểm tra mảng đạn hợp lệ
+        // âœ… Kiá»ƒm tra máº£ng Ä‘áº¡n há»£p lá»‡
         if (bulletPrefabs == null || bulletPrefabs.Length == 0)
         {
-            Debug.LogWarning("Chưa gán bulletPrefabs!");
+            Debug.LogWarning("ChÆ°a gÃ¡n bulletPrefabs!");
             return;
         }
 
         if (currentBulletIndex < 0 || currentBulletIndex >= bulletPrefabs.Length)
         {
-            Debug.LogWarning("Index đạn không hợp lệ: " + currentBulletIndex);
+            Debug.LogWarning("Index Ä‘áº¡n khÃ´ng há»£p lá»‡: " + currentBulletIndex);
             return;
         }
 
-        Debug.Log("Player Fire - Đạn index: " + currentBulletIndex);
+        LogDebug("Player Fire - Äáº¡n index: " + currentBulletIndex);
 
         for (int i = 0; i < ShootFX.Length; i++)
         {
             ShootFX[i].Play();
         }
 
-        GameObject bulletInstance = Instantiate(
+        GameObject bulletInstance = ProjectilePool.Spawn(
             bulletPrefabs[currentBulletIndex],
             shootElement.position,
             shootElement.rotation
         );
 
-        // 🔥 Lấy cooldown từ bullet
+        // ðŸ”¥ Láº¥y cooldown tá»« bullet
         bulletTank bulletScript = bulletInstance.GetComponent<bulletTank>();
         if (bulletScript != null)
         {
@@ -211,14 +234,14 @@ public class ControllerTank : MonoBehaviour
                 shieldObject.SetActive(false);
         }
 
-        Debug.Log("Shield đã hết!");
+        LogDebug("Shield Ä‘Ã£ háº¿t!");
     }
     }
     /// collect item 
     public void AddCoin(int amount)
     {
         coinCount += amount;
-        Debug.Log("Player nhận " + amount + " coin. Tổng coin: " + coinCount);
+        LogDebug("Player nháº­n " + amount + " coin. Tá»•ng coin: " + coinCount);
     }
 
     public void ActivateShield(float duration)
@@ -237,7 +260,7 @@ public class ControllerTank : MonoBehaviour
             }
         }
 
-        Debug.Log("Player bật shield trong " + duration + " giây");
+        LogDebug("Player báº­t shield trong " + duration + " giÃ¢y");
     }
 
     public void Stun(float duration, ParticleSystem stunEffect)
@@ -255,7 +278,7 @@ public class ControllerTank : MonoBehaviour
                 Transform point = stunEffectPoints[i];
                 if (point == null) continue;
 
-                ParticleSystem fx = Instantiate(stunEffect, point.position, point.rotation, point);
+                ParticleSystem fx = EffectPool.Spawn(stunEffect, point.position, point.rotation, point);
                 var main = fx.main;
                 main.loop = true;
                 fx.Play();
@@ -285,7 +308,7 @@ public class ControllerTank : MonoBehaviour
             ParticleSystem fx = stunEffectInstances[i];
             if (fx == null) continue;
             fx.Stop();
-            Destroy(fx.gameObject);
+            EffectPool.Despawn(fx);
         }
         stunEffectInstances.Clear();
     }
@@ -303,6 +326,20 @@ public class ControllerTank : MonoBehaviour
     void OnDestroy()
     {
         ClearStunEffects();
+    }
+
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    private void LogDebug(string message)
+    {
+        if (enableDebugLogs)
+        {
+            Debug.Log(message);
+        }
+    }
+
+    private void ApplyGlobalScale()
+    {
+        transform.localScale = baseLocalScale * GlobalScaleManager.GetScale(GlobalScaleCategory.Tank);
     }
 
 }

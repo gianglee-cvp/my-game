@@ -3,22 +3,28 @@ using UnityEngine;
 public class WheelUVByInput : MonoBehaviour
 {
     public float scrollSpeed = 1f;
-    Renderer rend;
+    private Renderer rend;
+    private Material wheelMaterial;
 
     void Start()
     {
         rend = GetComponent<Renderer>();
+        if (rend != null)
+        {
+            // Cache material once to avoid repeated material instantiation checks per frame.
+            wheelMaterial = rend.material;
+        }
     }
 
     void Update()
     {
         float vertical = Input.GetAxis("Vertical");
-        if (Mathf.Abs(vertical) > 0.01f)
+        if (wheelMaterial != null && Mathf.Abs(vertical) > 0.01f)
         {
-            float offset = rend.material.mainTextureOffset.y
+            float offset = wheelMaterial.mainTextureOffset.y
                          + Time.deltaTime * scrollSpeed * Mathf.Sign(-vertical);
 
-            rend.material.mainTextureOffset = new Vector2(0, offset);
+            wheelMaterial.mainTextureOffset = new Vector2(0, offset);
         }
     }
 }

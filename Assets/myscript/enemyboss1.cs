@@ -16,6 +16,7 @@ public class enemyboss1 : MonoBehaviour
 
     [Header("Boss Fire")]
     public GameObject bullet;
+    [Min(0)] public int bulletPrewarmCount = 32;
     public Transform[] firePoints;
     public ParticleSystem[] shootFX;
     public float shotInterval = 0.25f;
@@ -27,6 +28,7 @@ public class enemyboss1 : MonoBehaviour
     [Header("Spiral (Prepared API)")]
     public GameObject[] spiralBulletPrefabs;
     public GameObject spiralBulletPrefab;
+    [Min(0)] public int spiralPrewarmPerPrefab = 12;
     public float spiralAngleStep = 25f;
     public float spiralFireInterval = 0.2f;
     public Transform spiralFireOrigin;
@@ -52,9 +54,17 @@ public class enemyboss1 : MonoBehaviour
     private float nextFireTime = 0f;
     private int nextFirePointIndex = 0;
     private bool isPreparingShot = false;
+    private Vector3 baseLocalScale;
+
+    void Awake()
+    {
+        baseLocalScale = transform.localScale;
+    }
 
     void Start()
     {
+        ApplyGlobalScale();
+
         if (player == null)
         {
             GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
@@ -71,6 +81,21 @@ public class enemyboss1 : MonoBehaviour
             agent.stoppingDistance = stopRange;
             agent.updateRotation = false;
         }
+
+        ProjectilePool.Prewarm(bullet, bulletPrewarmCount);
+        if (spiralBulletPrefabs != null)
+        {
+            for (int i = 0; i < spiralBulletPrefabs.Length; i++)
+            {
+                ProjectilePool.Prewarm(spiralBulletPrefabs[i], spiralPrewarmPerPrefab);
+            }
+        }
+        ProjectilePool.Prewarm(spiralBulletPrefab, spiralPrewarmPerPrefab);
+    }
+
+    void OnEnable()
+    {
+        ApplyGlobalScale();
     }
 
     void Update()
@@ -262,7 +287,7 @@ public class enemyboss1 : MonoBehaviour
         if (bulletPrefab == null) return;
 
         Quaternion rot = Quaternion.LookRotation(direction);
-        GameObject bulletInstance = Instantiate(bulletPrefab, spawnPos, rot);
+        GameObject bulletInstance = ProjectilePool.Spawn(bulletPrefab, spawnPos, rot);
 
         bulletTank bulletScript = bulletInstance.GetComponent<bulletTank>();
         if (bulletScript == null)
@@ -343,7 +368,7 @@ public class enemyboss1 : MonoBehaviour
                 Transform point = stunEffectPoints[i];
                 if (point == null) continue;
 
-                ParticleSystem effectInstance = Instantiate(
+                ParticleSystem effectInstance = EffectPool.Spawn(
                     stunEffect,
                     point.position,
                     point.rotation,
@@ -383,7 +408,7 @@ public class enemyboss1 : MonoBehaviour
             ParticleSystem effect = stunEffectInstances[i];
             if (effect == null) continue;
             effect.Stop();
-            Destroy(effect.gameObject);
+            EffectPool.Despawn(effect);
         }
         stunEffectInstances.Clear();
     }
@@ -394,5 +419,10 @@ public class enemyboss1 : MonoBehaviour
 
         if (mySpawner != null)
             mySpawner.EnemyDied();
+    }
+
+    private void ApplyGlobalScale()
+    {
+        transform.localScale = baseLocalScale * GlobalScaleManager.GetScale(GlobalScaleCategory.Enemy);
     }
 }

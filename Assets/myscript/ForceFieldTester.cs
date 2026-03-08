@@ -1,13 +1,13 @@
-using UnityEngine;
+﻿using UnityEngine;
 using ProceduralForceField;
 
 public class ForceFieldTester : MonoBehaviour
 {
     void Start()
     {
-        // Tìm tất cả force field trong scene
+        // TÃ¬m táº¥t cáº£ force field trong scene
         ProceduralForceFieldOverlay[] overlays =
-            FindObjectsOfType<ProceduralForceFieldOverlay>();
+            FindObjectsByType<ProceduralForceFieldOverlay>(FindObjectsSortMode.None);
 
         foreach (var overlay in overlays)
         {

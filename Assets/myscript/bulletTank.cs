@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using ProceduralForceField;
 
@@ -17,12 +18,14 @@ public enum BulletType
 
 public class bulletTank : MonoBehaviour
 {
+    [SerializeField] private bool enableDebugLogs = false;
     [Header("Stats (Set in Inspector)")]
     public float speed = 20f;
     public float damage = 20f;
     public float fireCooldown = 1f;
     public float effectScale = 1f;
-    float destroyTime = 10f;
+    public float lifetime = 10f;
+    private float destroyTime;
 
     [Header("Team")]
     public Team bulletTeam;   // Xác định phe của đạn
@@ -32,6 +35,11 @@ public class bulletTank : MonoBehaviour
 
     [Header("Effect")]
     public ParticleSystem effectImpact;
+
+    [Header("Scale From Shooter (Optional)")]
+    public bool applyShooterScale = true;
+    [Min(0.01f)] public float bulletScaleMultiplier = 1f;
+    [Min(0.01f)] public float impactScaleMultiplier = 1f;
 
     [Header("Tesla Settings")]
     public float stunDuration = 3f;
@@ -49,6 +57,13 @@ public class bulletTank : MonoBehaviour
     public string bulletName = "Tank Bullet";
 
     Rigidbody bulletEngine;
+    private Vector3 baseBulletScale;
+    private float runtimeScaleFactor = 1f;
+
+    void Awake()
+    {
+        baseBulletScale = transform.localScale;
+    }
 
     void Start()
     {
@@ -59,7 +74,14 @@ public class bulletTank : MonoBehaviour
             effectScale = 3f;
         }
 
-        Debug.Log("position bullet: " + transform.position);
+        LogDebug("position bullet: " + transform.position);
+    }
+
+    void OnEnable()
+    {
+        destroyTime = lifetime;
+        runtimeScaleFactor = GlobalScaleManager.GetScale(GlobalScaleCategory.Bullet);
+        transform.localScale = baseBulletScale * runtimeScaleFactor;
     }
 
     void Update()
@@ -75,7 +97,7 @@ public class bulletTank : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        Debug.Log($"[{bulletName}] hit {other.gameObject.tag}");
+        LogDebug($"[{bulletName}] hit {other.gameObject.tag}");
         Transform hitRoot = other.transform.root;
         bool hitPlayer = other.CompareTag("Player") || hitRoot.CompareTag("Player");
         bool hitEnemy = other.CompareTag("Enemy") || hitRoot.CompareTag("Enemy");
@@ -228,26 +250,267 @@ public class bulletTank : MonoBehaviour
     {
         if (effectImpact != null)
         {
-            ParticleSystem effect = Instantiate(
-                effectImpact,
-                transform.position,
-                Quaternion.identity
-            );
+            ParticleSystem effect = EffectPool.Spawn(effectImpact, transform.position, Quaternion.identity);
+            if (effect == null) return;
+            float finalEffectScale =
+                effectScale *
+                runtimeScaleFactor *
+                impactScaleMultiplier *
+                GlobalScaleManager.GetScale(GlobalScaleCategory.Effect);
+            effect.transform.localScale = Vector3.one * finalEffectScale;
+            effect.Play(true);
 
-            effect.transform.localScale = Vector3.one * effectScale;
-            Destroy(effect.gameObject, effect.main.duration);
+            AutoReturnParticle autoReturn = effect.GetComponent<AutoReturnParticle>();
+            if (autoReturn == null)
+            {
+                autoReturn = effect.gameObject.AddComponent<AutoReturnParticle>();
+            }
+            autoReturn.ScheduleReturn(effect.main.duration);
         }
+    }
+
+    public void ApplyScaleFromShooter(Transform shooterRoot)
+    {
+        if (!applyShooterScale || shooterRoot == null)
+        {
+            runtimeScaleFactor = GlobalScaleManager.GetScale(GlobalScaleCategory.Bullet);
+            transform.localScale = baseBulletScale * runtimeScaleFactor;
+            return;
+        }
+
+        Vector3 shooterScale = shooterRoot.lossyScale;
+        float maxAxis = Mathf.Max(shooterScale.x, Mathf.Max(shooterScale.y, shooterScale.z));
+        runtimeScaleFactor =
+            Mathf.Max(0.01f, maxAxis * bulletScaleMultiplier) *
+            GlobalScaleManager.GetScale(GlobalScaleCategory.Bullet);
+        transform.localScale = baseBulletScale * runtimeScaleFactor;
     }
 
     void DestroyBullet()
     {
         if (transform.parent != null)
         {
-            Destroy(transform.parent.gameObject);
+            ProjectilePool.Despawn(transform.parent.gameObject);
         }
         else
         {
-            Destroy(gameObject);
+            ProjectilePool.Despawn(gameObject);
         }
+    }
+
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    private void LogDebug(string message)
+    {
+        if (enableDebugLogs)
+        {
+            Debug.Log(message);
+        }
+    }
+}
+
+public static class ProjectilePool
+{
+    private static readonly System.Collections.Generic.Dictionary<int, System.Collections.Generic.Queue<GameObject>> Pools =
+        new System.Collections.Generic.Dictionary<int, System.Collections.Generic.Queue<GameObject>>();
+    private const int DefaultExpandBatchSize = 8;
+
+    public static GameObject Spawn(GameObject prefab, Vector3 position, Quaternion rotation)
+    {
+        if (prefab == null) return null;
+
+        int key = prefab.GetInstanceID();
+        if (!Pools.TryGetValue(key, out System.Collections.Generic.Queue<GameObject> queue))
+        {
+            queue = new System.Collections.Generic.Queue<GameObject>();
+            Pools[key] = queue;
+        }
+
+        if (queue.Count == 0)
+        {
+            WarmPool(prefab, key, DefaultExpandBatchSize, queue);
+        }
+
+        while (queue.Count > 0)
+        {
+            GameObject pooled = queue.Dequeue();
+            if (pooled == null) continue;
+
+            pooled.transform.SetPositionAndRotation(position, rotation);
+            pooled.SetActive(true);
+            return pooled;
+        }
+
+        GameObject instance = CreatePooledInstance(prefab, key);
+        instance.transform.SetPositionAndRotation(position, rotation);
+        instance.SetActive(true);
+        return instance;
+    }
+
+    public static void Prewarm(GameObject prefab, int count)
+    {
+        if (prefab == null || count <= 0) return;
+
+        int key = prefab.GetInstanceID();
+        if (!Pools.TryGetValue(key, out System.Collections.Generic.Queue<GameObject> queue))
+        {
+            queue = new System.Collections.Generic.Queue<GameObject>();
+            Pools[key] = queue;
+        }
+
+        int missing = count - queue.Count;
+        if (missing > 0)
+        {
+            WarmPool(prefab, key, missing, queue);
+        }
+    }
+
+    public static void Despawn(GameObject obj)
+    {
+        if (obj == null) return;
+
+        PooledProjectile pooled = obj.GetComponent<PooledProjectile>();
+        if (pooled == null)
+        {
+            Object.Destroy(obj);
+            return;
+        }
+
+        int key = pooled.PoolKey;
+        if (!Pools.TryGetValue(key, out System.Collections.Generic.Queue<GameObject> queue))
+        {
+            queue = new System.Collections.Generic.Queue<GameObject>();
+            Pools[key] = queue;
+        }
+
+        obj.SetActive(false);
+        queue.Enqueue(obj);
+    }
+
+    private static void WarmPool(
+        GameObject prefab,
+        int key,
+        int count,
+        System.Collections.Generic.Queue<GameObject> queue)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            GameObject instance = CreatePooledInstance(prefab, key);
+            instance.SetActive(false);
+            queue.Enqueue(instance);
+        }
+    }
+
+    private static GameObject CreatePooledInstance(GameObject prefab, int key)
+    {
+        GameObject instance = Object.Instantiate(prefab);
+        PooledProjectile pooledProjectile = instance.GetComponent<PooledProjectile>();
+        if (pooledProjectile == null)
+        {
+            pooledProjectile = instance.AddComponent<PooledProjectile>();
+        }
+        pooledProjectile.PoolKey = key;
+        return instance;
+    }
+}
+
+public class PooledProjectile : MonoBehaviour
+{
+    public int PoolKey { get; set; }
+}
+
+public static class EffectPool
+{
+    private static readonly System.Collections.Generic.Dictionary<int, System.Collections.Generic.Queue<ParticleSystem>> Pools =
+        new System.Collections.Generic.Dictionary<int, System.Collections.Generic.Queue<ParticleSystem>>();
+
+    public static ParticleSystem Spawn(ParticleSystem prefab, Vector3 position, Quaternion rotation, Transform parent = null)
+    {
+        if (prefab == null) return null;
+
+        int key = prefab.GetInstanceID();
+        if (!Pools.TryGetValue(key, out System.Collections.Generic.Queue<ParticleSystem> queue))
+        {
+            queue = new System.Collections.Generic.Queue<ParticleSystem>();
+            Pools[key] = queue;
+        }
+
+        while (queue.Count > 0)
+        {
+            ParticleSystem pooled = queue.Dequeue();
+            if (pooled == null) continue;
+
+            Transform t = pooled.transform;
+            t.SetParent(parent, false);
+            t.SetPositionAndRotation(position, rotation);
+            pooled.gameObject.SetActive(true);
+            pooled.Clear(true);
+            return pooled;
+        }
+
+        ParticleSystem created = Object.Instantiate(prefab, position, rotation, parent);
+        PooledEffect pooledEffect = created.GetComponent<PooledEffect>();
+        if (pooledEffect == null)
+        {
+            pooledEffect = created.gameObject.AddComponent<PooledEffect>();
+        }
+        pooledEffect.PoolKey = key;
+        return created;
+    }
+
+    public static void Despawn(ParticleSystem effect)
+    {
+        if (effect == null) return;
+
+        PooledEffect pooled = effect.GetComponent<PooledEffect>();
+        if (pooled == null)
+        {
+            Object.Destroy(effect.gameObject);
+            return;
+        }
+
+        int key = pooled.PoolKey;
+        if (!Pools.TryGetValue(key, out System.Collections.Generic.Queue<ParticleSystem> queue))
+        {
+            queue = new System.Collections.Generic.Queue<ParticleSystem>();
+            Pools[key] = queue;
+        }
+
+        effect.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        effect.transform.SetParent(null);
+        effect.gameObject.SetActive(false);
+        queue.Enqueue(effect);
+    }
+}
+
+public class PooledEffect : MonoBehaviour
+{
+    public int PoolKey { get; set; }
+}
+
+public class AutoReturnParticle : MonoBehaviour
+{
+    private Coroutine returnRoutine;
+    private ParticleSystem effect;
+
+    private void Awake()
+    {
+        effect = GetComponent<ParticleSystem>();
+    }
+
+    public void ScheduleReturn(float delay)
+    {
+        if (returnRoutine != null)
+        {
+            StopCoroutine(returnRoutine);
+        }
+
+        returnRoutine = StartCoroutine(ReturnAfterDelay(Mathf.Max(0.01f, delay)));
+    }
+
+    private IEnumerator ReturnAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        EffectPool.Despawn(effect);
+        returnRoutine = null;
     }
 }
