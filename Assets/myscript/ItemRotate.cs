@@ -30,10 +30,18 @@ public class Spin : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.CompareTag("Player")) return;
-
-        ControllerTank player = other.GetComponent<ControllerTank>();
+        ControllerTank player = other.GetComponentInParent<ControllerTank>();
+        if (player == null && other.attachedRigidbody != null)
+        {
+            player = other.attachedRigidbody.GetComponent<ControllerTank>();
+        }
         if (player == null) return;
+
+        bool isPlayerHit =
+            other.CompareTag("Player") ||
+            other.transform.root.CompareTag("Player") ||
+            player.CompareTag("Player");
+        if (!isPlayerHit) return;
 
         switch (itemType)
         {
@@ -46,7 +54,9 @@ public class Spin : MonoBehaviour
                 break;
 
             case ItemType.Cross:
-                HP hp = other.GetComponent<HP>();   // ✅ lấy trực tiếp
+                HP hp = player.GetComponent<HP>();
+                if (hp == null)
+                    hp = player.GetComponentInParent<HP>();
                 if (hp != null)
                     hp.Heal(50f);
                 break;

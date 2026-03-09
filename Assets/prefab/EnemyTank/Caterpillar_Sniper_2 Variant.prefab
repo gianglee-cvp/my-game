@@ -403,7 +403,7 @@ NavMeshAgent:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7099993097223626320}
   m_Enabled: 1
-  m_AgentTypeID: 0
+  m_AgentTypeID: -334000983
   m_Radius: 3
   m_Speed: 3.5
   m_Acceleration: 8
@@ -430,11 +430,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::enemyboss1
   player: {fileID: 0}
-  moveSpeed: 5
+  moveSpeed: 8
   rotateSpeed: 5
-  detectionRange: 100
+  detectionRange: 505.9
   stopRange: 10
-  shootRange: 30
+  shootRange: 55.1
   bullet: {fileID: 3200511878250533640, guid: 09d529a9d4890493887c0d86f6235f8b, type: 3}
   bulletPrewarmCount: 32
   firePoints:
@@ -457,9 +457,9 @@ MonoBehaviour:
   spiralBulletPrefab: {fileID: 3200511878250533640, guid: 09d529a9d4890493887c0d86f6235f8b, type: 3}
   spiralPrewarmPerPrefab: 12
   spiralAngleStep: 10
-  spiralFireInterval: 3
+  spiralFireInterval: 1.5
   spiralFireOrigin: {fileID: 7242704300316361284}
-  spiralBulletCount: 12
+  spiralBulletCount: 20
   stunEffectPoints: []
   knockbackResistance: 1
   mySpawner: {fileID: 0}
