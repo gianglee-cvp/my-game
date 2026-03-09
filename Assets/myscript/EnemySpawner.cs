@@ -16,18 +16,48 @@ public class EnemySpawner : MonoBehaviour
     public float checkRadius = 1.5f;
     public LayerMask checkLayer;
 
+    [Header("Flow")]
+    public bool autoSpawnWaves = true;
+    [Min(0)] public int maxWaves = 0; // 0 = unlimited
+
     private int currentWave = 1;
     private int enemiesAlive = 0;
     private bool isSpawning = false;
+    private int activeWaveNumber = 0;
+    private int completedWaves = 0;
+    private bool waveActive = false;
+
+    public event System.Action<int> OnWaveCompleted;
+
+    public int CurrentWave => currentWave;
+    public int ActiveWaveNumber => activeWaveNumber;
+    public int CompletedWaves => completedWaves;
+    public int EnemiesAlive => enemiesAlive;
+    public bool IsSpawning => isSpawning;
 
     void Start()
     {
+        if (!CanStartWave(currentWave))
+        {
+            return;
+        }
+
+        isSpawning = true;
         StartCoroutine(StartWave());
     }
 
     IEnumerator StartWave()
     {
+        if (!CanStartWave(currentWave))
+        {
+            isSpawning = false;
+            waveActive = false;
+            yield break;
+        }
+
         isSpawning = true;
+        activeWaveNumber = currentWave;
+        waveActive = true;
         int amount = startEnemyCount * currentWave;
 
         for (int i = 0; i < amount; i++)
@@ -69,8 +99,18 @@ public class EnemySpawner : MonoBehaviour
     {
         if (enemiesAlive == 0 && !isSpawning)
         {
-            isSpawning = true;
-            StartCoroutine(NextWave());
+            if (waveActive)
+            {
+                completedWaves = Mathf.Max(completedWaves, activeWaveNumber);
+                waveActive = false;
+                OnWaveCompleted?.Invoke(completedWaves);
+            }
+
+            if (autoSpawnWaves && CanStartWave(completedWaves + 1))
+            {
+                isSpawning = true;
+                StartCoroutine(NextWave());
+            }
         }
     }
 
@@ -83,6 +123,11 @@ public class EnemySpawner : MonoBehaviour
     public void EnemyDied()
     {
         enemiesAlive = Mathf.Max(0, enemiesAlive - 1);
+    }
+
+    private bool CanStartWave(int waveNumber)
+    {
+        return maxWaves <= 0 || waveNumber <= maxWaves;
     }
 
     void OnDrawGizmosSelected()

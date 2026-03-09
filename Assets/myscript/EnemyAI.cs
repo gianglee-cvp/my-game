@@ -20,6 +20,8 @@ public class EnemyAI : MonoBehaviour
     public float flyHeight = 7f;
     public float ascendSpeed = 3f;
     public float bomberLifetime = 15f;
+    [Min(0)] public int bombPrewarmCount = 4;
+    public Transform bombDropPoint;
 
     [Header("Attack")]
     public GameObject bullet;
@@ -52,16 +54,27 @@ public class EnemyAI : MonoBehaviour
     private float knockbackTimer = 0f;
     private Vector3 knockbackVelocity = Vector3.zero;
     private Vector3 baseLocalScale;
+    private float baseMoveSpeed;
+    private float baseRotateSpeed;
+    private Bomb bomberBombTemplate;
+    private Vector3 bombTemplateLocalPosition;
+    private Quaternion bombTemplateLocalRotation = Quaternion.identity;
+    private Vector3 bombTemplateLocalScale = Vector3.one;
 
     void Awake()
     {
         baseLocalScale = transform.localScale;
+        baseMoveSpeed = moveSpeed;
+        baseRotateSpeed = rotateSpeed;
     }
 
     void OnEnable()
     {
+        ApplyGlobalSpeed();
         ApplyGlobalScale();
         ResetRuntimeState();
+        CacheBomberBombTemplateIfNeeded();
+        EnsureBomberCarriesBombIfMissing();
     }
 
     void Start()
@@ -80,7 +93,7 @@ public class EnemyAI : MonoBehaviour
         if (type == EnemyType.Shooter)
         {
             agent = GetComponent<NavMeshAgent>();
-            agent.speed = moveSpeed;
+            ApplyGlobalSpeed();
             agent.stoppingDistance = stopRange;
             agent.updateRotation = false;
             ProjectilePool.Prewarm(bullet, bulletPrewarmCount);
@@ -91,6 +104,11 @@ public class EnemyAI : MonoBehaviour
             rb.useGravity = false;      // KhÃ´ng cho rÆ¡i
             isAscending = true;         // Báº¯t Ä‘áº§u bay lÃªn
             bomberSpawnTime = Time.time;
+            CacheBomberBombTemplateIfNeeded();
+            if (bomberBombTemplate != null)
+            {
+                ProjectilePool.Prewarm(bomberBombTemplate.gameObject, bombPrewarmCount);
+            }
         }
 
         ResetRuntimeState();
@@ -407,7 +425,7 @@ public class EnemyAI : MonoBehaviour
     {
         if (hasActed) return;
 
-        Bomb bombScript = GetComponentInChildren<Bomb>();
+        Bomb bombScript = GetBombForDrop();
         if (bombScript != null)
         {
             hasActed = true;
@@ -436,6 +454,121 @@ public class EnemyAI : MonoBehaviour
 
             EnemyPool.Despawn(gameObject);
         }
+    }
+
+    private void CacheBomberBombTemplateIfNeeded()
+    {
+        if (type != EnemyType.Bomber || bomberBombTemplate != null)
+        {
+            return;
+        }
+
+        Bomb existingBomb = GetComponentInChildren<Bomb>(true);
+        if (existingBomb == null)
+        {
+            return;
+        }
+
+        GameObject templateObject = Instantiate(existingBomb.gameObject, transform);
+        templateObject.name = existingBomb.gameObject.name + "_Template";
+        templateObject.SetActive(false);
+        bomberBombTemplate = templateObject.GetComponent<Bomb>();
+        bombTemplateLocalPosition = existingBomb.transform.localPosition;
+        bombTemplateLocalRotation = existingBomb.transform.localRotation;
+        bombTemplateLocalScale = existingBomb.transform.localScale;
+    }
+
+    private Bomb GetBombForDrop()
+    {
+        Bomb attachedBomb = FindAttachedCarriedBomb();
+        if (attachedBomb != null)
+        {
+            return attachedBomb;
+        }
+
+        if (bomberBombTemplate == null)
+        {
+            return null;
+        }
+
+        Transform dropOrigin = bombDropPoint != null ? bombDropPoint : transform;
+        GameObject bombObject = ProjectilePool.Spawn(
+            bomberBombTemplate.gameObject,
+            dropOrigin.position,
+            dropOrigin.rotation
+        );
+
+        if (bombObject == null)
+        {
+            return null;
+        }
+
+        return bombObject.GetComponent<Bomb>();
+    }
+
+    private void EnsureBomberCarriesBombIfMissing()
+    {
+        if (type != EnemyType.Bomber || bomberBombTemplate == null)
+        {
+            return;
+        }
+
+        Bomb attachedBomb = FindAttachedCarriedBomb();
+        if (attachedBomb != null)
+        {
+            return;
+        }
+
+        Transform attachRoot = bombDropPoint != null ? bombDropPoint : transform;
+        GameObject bombObject = ProjectilePool.Spawn(
+            bomberBombTemplate.gameObject,
+            attachRoot.position,
+            attachRoot.rotation
+        );
+
+        if (bombObject == null)
+        {
+            return;
+        }
+
+        bombObject.transform.SetParent(attachRoot, false);
+        bombObject.transform.localPosition = bombDropPoint != null ? Vector3.zero : bombTemplateLocalPosition;
+        bombObject.transform.localRotation = bombDropPoint != null ? Quaternion.identity : bombTemplateLocalRotation;
+        bombObject.transform.localScale = bombTemplateLocalScale;
+
+        Rigidbody bombRb = bombObject.GetComponent<Rigidbody>();
+        if (bombRb != null)
+        {
+            bombRb.isKinematic = true;
+            bombRb.useGravity = false;
+            bombRb.linearVelocity = Vector3.zero;
+            bombRb.angularVelocity = Vector3.zero;
+        }
+    }
+
+    private Bomb FindAttachedCarriedBomb()
+    {
+        Bomb[] bombs = GetComponentsInChildren<Bomb>(true);
+        for (int i = 0; i < bombs.Length; i++)
+        {
+            Bomb bomb = bombs[i];
+            if (bomb == null)
+            {
+                continue;
+            }
+
+            if (bomberBombTemplate != null && bomb == bomberBombTemplate)
+            {
+                continue;
+            }
+
+            if (bomb.transform.IsChildOf(transform))
+            {
+                return bomb;
+            }
+        }
+
+        return null;
     }
 
     private void ResetRuntimeState()
@@ -499,5 +632,17 @@ public class EnemyAI : MonoBehaviour
     private void ApplyGlobalScale()
     {
         transform.localScale = baseLocalScale * GlobalScaleManager.GetScale(GlobalScaleCategory.Enemy);
+    }
+
+    private void ApplyGlobalSpeed()
+    {
+        float speedMul = GlobalScaleManager.GetEnemySpeedMultiplier();
+        moveSpeed = baseMoveSpeed * speedMul;
+        rotateSpeed = baseRotateSpeed * speedMul;
+
+        if (agent != null)
+        {
+            agent.speed = moveSpeed;
+        }
     }
 }

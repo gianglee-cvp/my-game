@@ -15,7 +15,9 @@ public class GlobalScaleConfig
 {
     [Min(0.01f)] public float tankScaleMul = 1f;
     [Min(0.01f)] public float enemyScaleMul = 1f;
+    [Min(0.01f)] public float enemySpeedMul = 1f;
     [Min(0.01f)] public float bulletScaleMul = 1f;
+    [Min(0.01f)] public float bulletSpeedMul = 1f;
     [Min(0.01f)] public float effectScaleMul = 1f;
     [Min(0.01f)] public float pickupScaleMul = 1f;
     [Min(0.01f)] public float bombScaleMul = 1f;
@@ -75,5 +77,24 @@ public class GlobalScaleManager : MonoBehaviour
 
         return Mathf.Max(0.01f, Instance.globalVisualScale * Mathf.Max(0.01f, categoryMul));
     }
-}
 
+    public static float GetEnemySpeedMultiplier()
+    {
+        if (Instance == null)
+        {
+            return 1f;
+        }
+
+        return Mathf.Max(0.01f, Instance.config.enemySpeedMul);
+    }
+
+    public static float GetBulletSpeedMultiplier()
+    {
+        if (Instance == null)
+        {
+            return 1f;
+        }
+
+        return Mathf.Max(0.01f, Instance.config.bulletSpeedMul);
+    }
+}

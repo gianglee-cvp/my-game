@@ -7135,7 +7135,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1111221627763930, guid: b70cec7cb7d6cad4ebfbcd691d25ba08, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1111221627763930, guid: b70cec7cb7d6cad4ebfbcd691d25ba08, type: 3}
       propertyPath: m_TagString
@@ -45032,7 +45032,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &845366491
 Transform:
   m_ObjectHideFlags: 0
@@ -83600,6 +83600,7 @@ MonoBehaviour:
   stopRange: 10
   shootRange: 30
   bullet: {fileID: 3200511878250533640, guid: 09d529a9d4890493887c0d86f6235f8b, type: 3}
+  bulletPrewarmCount: 32
   firePoints:
   - {fileID: 376218616}
   - {fileID: 626412741}
@@ -83618,6 +83619,7 @@ MonoBehaviour:
   - {fileID: 3357759375718764902, guid: 42597be63c91449f8b3a5304e53355f4, type: 3}
   - {fileID: 3200511878250533640, guid: 09d529a9d4890493887c0d86f6235f8b, type: 3}
   spiralBulletPrefab: {fileID: 3200511878250533640, guid: 09d529a9d4890493887c0d86f6235f8b, type: 3}
+  spiralPrewarmPerPrefab: 12
   spiralAngleStep: 10
   spiralFireInterval: 3
   spiralFireOrigin: {fileID: 892424073}
@@ -83637,6 +83639,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d283b6163fda4b78967ced864064142, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HP
+  enableDebugLogs: 0
   maxHP: 2000
   currentHP: 0
 --- !u!1 &1408370115
@@ -119269,6 +119272,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d283b6163fda4b78967ced864064142, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HP
+  enableDebugLogs: 0
   maxHP: 2000
   currentHP: 0
 --- !u!114 &2068046740
@@ -119283,6 +119287,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26a61c87a808d44b0965e385dc552e26, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ControllerTank
+  enableDebugLogs: 0
   shieldObject: {fileID: 1495936847}
   Movespeed: 10
   Tower: {fileID: 1145473461}
@@ -119300,6 +119305,7 @@ MonoBehaviour:
   - {fileID: 1462359765158876, guid: 6a1be730c40aa4282beed5d0687b05b2, type: 3}
   - {fileID: 3357759375718764902, guid: 42597be63c91449f8b3a5304e53355f4, type: 3}
   - {fileID: 3200511878250533640, guid: 09d529a9d4890493887c0d86f6235f8b, type: 3}
+  prewarmPerBulletPrefab: 24
   currentBulletIndex: 0
   shootElement: {fileID: 1434751874}
   coinCount: 0
@@ -121977,7 +121983,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 76259500111751883, guid: 8c4887a2f546c4cf2907086c7f33f82d, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1821116527566493848, guid: 8c4887a2f546c4cf2907086c7f33f82d, type: 3}
       propertyPath: player

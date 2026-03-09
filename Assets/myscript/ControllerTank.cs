@@ -25,6 +25,11 @@ public class ControllerTank : MonoBehaviour
     public int currentBulletIndex = 0; // chá»n loáº¡i Ä‘áº¡n trong Inspector
     public Transform shootElement;
 
+    [Header("Player Fire Tuning")]
+    [Min(0.01f)] public float playerFireCooldownFactor = 0.2f;
+    [Min(0.01f)] public float maxPlayerBulletCooldown = 1f;
+    [Min(0.01f)] public float minPlayerFireInterval = 0.05f;
+
     private float nextFireTime = 0f;
 
     // Sá»‘ coin nháº·t Ä‘Æ°á»£c
@@ -114,7 +119,7 @@ public class ControllerTank : MonoBehaviour
 
     void Fire()
     {
-        if (!Input.GetMouseButtonDown(0)) return;
+        if (!Input.GetMouseButton(0)) return;
         if (Time.time < nextFireTime) return;
 
         // âœ… Kiá»ƒm tra máº£ng Ä‘áº¡n há»£p lá»‡
@@ -144,15 +149,23 @@ public class ControllerTank : MonoBehaviour
         );
 
         // ðŸ”¥ Láº¥y cooldown tá»« bullet
-        bulletTank bulletScript = bulletInstance.GetComponent<bulletTank>();
+        bulletTank bulletScript = bulletInstance.GetComponentInChildren<bulletTank>();
         if (bulletScript != null)
         {
             bulletScript.bulletTeam = Team.Player;
-            nextFireTime = Time.time + 0.2f * bulletScript.fireCooldown;
+            float clampedBulletCooldown = Mathf.Min(
+                Mathf.Max(0.01f, bulletScript.fireCooldown),
+                maxPlayerBulletCooldown
+            );
+            float fireInterval = Mathf.Max(
+                minPlayerFireInterval,
+                playerFireCooldownFactor * clampedBulletCooldown
+            );
+            nextFireTime = Time.time + fireInterval;
         }
         else
         {
-            nextFireTime = Time.time + 0.5f; // fallback
+            nextFireTime = Time.time + minPlayerFireInterval; // fallback
         }
     }
     void SwitchWeapon()

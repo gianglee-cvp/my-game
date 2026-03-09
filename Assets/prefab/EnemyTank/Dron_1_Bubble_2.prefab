@@ -3282,17 +3282,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI
   type: 1
   player: {fileID: 0}
-  moveSpeed: 12
+  moveSpeed: 15
   rotateSpeed: 5
-  detectionRange: 60
-  stopRange: 7.5
+  detectionRange: 501.5
+  stopRange: 10.5
   shootRange: 6
-  flyHeight: 7
+  flyHeight: 10
   ascendSpeed: 3
-  bomberLifetime: 15
+  bomberLifetime: 30
+  bombPrewarmCount: 4
+  bombDropPoint: {fileID: 0}
   bullet: {fileID: 0}
+  bulletPrewarmCount: 16
   shootElement: {fileID: 0}
   ShootFX: []
   mySpawner: {fileID: 0}
+  enableDebugLogs: 0
   stunEffectPoints: []
   knockbackResistance: 1

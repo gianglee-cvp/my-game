@@ -5984,6 +5984,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d283b6163fda4b78967ced864064142, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HP
+  enableDebugLogs: 0
   maxHP: 100
   currentHP: 0
 --- !u!195 &771557226885426681
@@ -6024,21 +6025,26 @@ MonoBehaviour:
   player: {fileID: 0}
   moveSpeed: 5
   rotateSpeed: 5
-  detectionRange: 40
+  detectionRange: 500
   stopRange: 10
   shootRange: 30
   flyHeight: 7
   ascendSpeed: 3
   bomberLifetime: 15
+  bombPrewarmCount: 4
+  bombDropPoint: {fileID: 0}
   bullet: {fileID: 1462359765158876, guid: b6dd62d933149e54f9f0371e5e54afcf, type: 3}
+  bulletPrewarmCount: 16
   shootElement: {fileID: 2719189258987036263}
   ShootFX: []
   mySpawner: {fileID: 0}
+  enableDebugLogs: 0
   stunEffectPoints:
   - {fileID: 7693093101411683428}
   - {fileID: 1246629697446662331}
   - {fileID: 7915544965249431613}
   - {fileID: 4896473089062620935}
+  knockbackResistance: 1
 --- !u!1 &8299714161569756239
 GameObject:
   m_ObjectHideFlags: 0

@@ -55,10 +55,14 @@ public class enemyboss1 : MonoBehaviour
     private int nextFirePointIndex = 0;
     private bool isPreparingShot = false;
     private Vector3 baseLocalScale;
+    private float baseMoveSpeed;
+    private float baseRotateSpeed;
 
     void Awake()
     {
         baseLocalScale = transform.localScale;
+        baseMoveSpeed = moveSpeed;
+        baseRotateSpeed = rotateSpeed;
     }
 
     void Start()
@@ -77,7 +81,7 @@ public class enemyboss1 : MonoBehaviour
         agent = GetComponent<NavMeshAgent>();
         if (agent != null)
         {
-            agent.speed = moveSpeed;
+            ApplyGlobalSpeed();
             agent.stoppingDistance = stopRange;
             agent.updateRotation = false;
         }
@@ -95,6 +99,7 @@ public class enemyboss1 : MonoBehaviour
 
     void OnEnable()
     {
+        ApplyGlobalSpeed();
         ApplyGlobalScale();
     }
 
@@ -424,5 +429,17 @@ public class enemyboss1 : MonoBehaviour
     private void ApplyGlobalScale()
     {
         transform.localScale = baseLocalScale * GlobalScaleManager.GetScale(GlobalScaleCategory.Enemy);
+    }
+
+    private void ApplyGlobalSpeed()
+    {
+        float speedMul = GlobalScaleManager.GetEnemySpeedMultiplier();
+        moveSpeed = baseMoveSpeed * speedMul;
+        rotateSpeed = baseRotateSpeed * speedMul;
+
+        if (agent != null)
+        {
+            agent.speed = moveSpeed;
+        }
     }
 }

@@ -58,17 +58,22 @@ public class bulletTank : MonoBehaviour
 
     Rigidbody bulletEngine;
     private Vector3 baseBulletScale;
+    private float baseSpeed;
     private float runtimeScaleFactor = 1f;
+    private Vector3 baseLocalPosition;
+    private Quaternion baseLocalRotation;
 
     void Awake()
     {
+        bulletEngine = GetComponent<Rigidbody>();
         baseBulletScale = transform.localScale;
+        baseSpeed = speed;
+        baseLocalPosition = transform.localPosition;
+        baseLocalRotation = transform.localRotation;
     }
 
     void Start()
     {
-        bulletEngine = GetComponent<Rigidbody>();
-
         if (bulletName == "plougher_bullet")
         {
             effectScale = 3f;
@@ -79,14 +84,31 @@ public class bulletTank : MonoBehaviour
 
     void OnEnable()
     {
+        // Only reset local transform for nested bullets (root-wrapper prefabs like rocket/plougher).
+        // For root bullets (e.g. Tesla), keep spawn world rotation from shootElement.
+        if (transform.parent != null)
+        {
+            transform.localPosition = baseLocalPosition;
+            transform.localRotation = baseLocalRotation;
+        }
+
+        speed = baseSpeed * GlobalScaleManager.GetBulletSpeedMultiplier();
         destroyTime = lifetime;
         runtimeScaleFactor = GlobalScaleManager.GetScale(GlobalScaleCategory.Bullet);
         transform.localScale = baseBulletScale * runtimeScaleFactor;
+
+        if (bulletEngine != null)
+        {
+            bulletEngine.linearVelocity = Vector3.zero;
+            bulletEngine.angularVelocity = Vector3.zero;
+            bulletEngine.useGravity = false;
+            bulletEngine.isKinematic = true;
+        }
     }
 
     void Update()
     {
-        transform.Translate(Vector3.forward * speed * Time.deltaTime);
+        transform.position += transform.forward * speed * Time.deltaTime;
 
         destroyTime -= Time.deltaTime;
         if (destroyTime <= 0)
@@ -97,7 +119,8 @@ public class bulletTank : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        LogDebug($"[{bulletName}] hit {other.gameObject.tag}");
+        Debug.Log($"[{bulletName}] hit {other.gameObject.tag}");
+        Debug.Log($"[{bulletName}] hit {other.gameObject.name} (tag: {other.transform.root.gameObject.tag})");
         Transform hitRoot = other.transform.root;
         bool hitPlayer = other.CompareTag("Player") || hitRoot.CompareTag("Player");
         bool hitEnemy = other.CompareTag("Enemy") || hitRoot.CompareTag("Enemy");
@@ -288,14 +311,14 @@ public class bulletTank : MonoBehaviour
 
     void DestroyBullet()
     {
-        if (transform.parent != null)
+        PooledProjectile pooledRoot = GetComponentInParent<PooledProjectile>();
+        if (pooledRoot != null)
         {
-            ProjectilePool.Despawn(transform.parent.gameObject);
+            ProjectilePool.Despawn(pooledRoot.gameObject);
+            return;
         }
-        else
-        {
-            ProjectilePool.Despawn(gameObject);
-        }
+
+        ProjectilePool.Despawn(gameObject);
     }
 
     [System.Diagnostics.Conditional("UNITY_EDITOR")]

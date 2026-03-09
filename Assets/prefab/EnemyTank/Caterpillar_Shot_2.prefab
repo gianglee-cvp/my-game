@@ -104,22 +104,27 @@ MonoBehaviour:
   player: {fileID: 0}
   moveSpeed: 5
   rotateSpeed: 5
-  detectionRange: 40
+  detectionRange: 501.7
   stopRange: 10
   shootRange: 20
   flyHeight: 7
   ascendSpeed: 3
   bomberLifetime: 15
+  bombPrewarmCount: 4
+  bombDropPoint: {fileID: 0}
   bullet: {fileID: 3200511878250533640, guid: 69208f6b3f07a4821b162ee29840ca25, type: 3}
+  bulletPrewarmCount: 16
   shootElement: {fileID: 1439558883161713826}
   ShootFX: []
   mySpawner: {fileID: 0}
+  enableDebugLogs: 0
   stunEffectPoints:
   - {fileID: 4027821606866606012}
   - {fileID: 3535019383896982753}
   - {fileID: 1210109548382842084}
   - {fileID: 181752946010317655}
   - {fileID: 73461486067107959}
+  knockbackResistance: 1
 --- !u!114 &5030168526452515172
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -132,6 +137,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d283b6163fda4b78967ced864064142, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HP
+  enableDebugLogs: 0
   maxHP: 100
   currentHP: 0
 --- !u!195 &2047988960443018032
