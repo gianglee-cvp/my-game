@@ -99,8 +99,11 @@ public class bulletTank : MonoBehaviour
 
         if (bulletEngine != null)
         {
-            bulletEngine.linearVelocity = Vector3.zero;
-            bulletEngine.angularVelocity = Vector3.zero;
+            if (!bulletEngine.isKinematic)
+            {
+                bulletEngine.linearVelocity = Vector3.zero;
+                bulletEngine.angularVelocity = Vector3.zero;
+            }
             bulletEngine.useGravity = false;
             bulletEngine.isKinematic = true;
         }

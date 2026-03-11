@@ -51,6 +51,9 @@ public class ControllerTank : MonoBehaviour
     private float knockbackTimer = 0f;
     private Vector3 knockbackVelocity = Vector3.zero;
     private Vector3 baseLocalScale;
+    public float wallCheckDistance = 3f;
+    public LayerMask wallLayer;
+    public Transform wallCheckPoint;
 
     void Awake()
     {
@@ -81,13 +84,59 @@ public class ControllerTank : MonoBehaviour
     {
         ApplyGlobalScale();
     }
+    bool IsWallAhead()
+    {
+        Ray ray = new Ray(wallCheckPoint.position, transform.forward);
+        RaycastHit hit;
 
+        Debug.DrawRay(wallCheckPoint.position, transform.forward * wallCheckDistance, Color.red);
+
+        if (Physics.Raycast(ray, out hit, wallCheckDistance, wallLayer))
+        {
+            Debug.Log("Wall detected: " + hit.collider.name);
+            return true;
+        }
+
+        return false;
+    }
+    bool IsWallBehind()
+    {
+        Ray ray = new Ray(wallCheckPoint.position, -transform.forward);
+        RaycastHit hit;
+
+        Debug.DrawRay(wallCheckPoint.position, -transform.forward * wallCheckDistance, Color.blue);
+
+        if (Physics.Raycast(ray, out hit, wallCheckDistance, wallLayer))
+        {
+            Debug.Log("Wall behind: " + hit.collider.name);
+            return true;
+        }
+
+        return false;
+    }
     void Move()
     {
-        Vector3 move = transform.forward *
-                       Input.GetAxis("Vertical") *
-                       Movespeed *
-                       Time.deltaTime;
+        float v = Input.GetAxis("Vertical");
+
+        // chặn khi đi tới
+        if (v > 0 && IsWallAhead())
+        {
+            LogDebug("Blocked by wall ahead");
+            return;
+        }
+
+        // chặn khi lùi
+        if (v < 0 && IsWallBehind())
+        {
+            LogDebug("Blocked by wall behind");
+            return;
+        }
+
+        Vector3 move =
+            transform.forward *
+            v *
+            Movespeed *
+            Time.deltaTime;
 
         TankEngine.MovePosition(TankEngine.position + move);
     }
