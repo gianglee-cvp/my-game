@@ -53,7 +53,9 @@ public class ControllerTank : MonoBehaviour
     private Vector3 baseLocalScale;
     public float wallCheckDistance = 3f;
     public LayerMask wallLayer;
-    public Transform wallCheckPoint;
+    public Transform leftCheckPoint;
+    public Transform centerCheckPoint;
+    public Transform rightCheckPoint;
 
     void Awake()
     {
@@ -71,6 +73,15 @@ public class ControllerTank : MonoBehaviour
             shieldObject.SetActive(false); // ban Ä‘áº§u táº¯t
         }
 
+        if (TankEngine != null)
+        {
+            // Ngăn Tank bị đổ nhào khi đi vào địa hình gồ ghề (chỉ cho phép xoay quanh trục Y)
+            TankEngine.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+            
+            // Hạ thấp trọng tâm để xe bám đường tốt hơn (tùy chọn)
+            TankEngine.centerOfMass = new Vector3(0, -0.5f, 0);
+        }
+
         if (bulletPrefabs != null && prewarmPerBulletPrefab > 0)
         {
             for (int i = 0; i < bulletPrefabs.Length; i++)
@@ -86,49 +97,90 @@ public class ControllerTank : MonoBehaviour
     }
     bool IsWallAhead()
     {
-        Ray ray = new Ray(wallCheckPoint.position, transform.forward);
-        RaycastHit hit;
-
-        Debug.DrawRay(wallCheckPoint.position, transform.forward * wallCheckDistance, Color.red);
-
-        if (Physics.Raycast(ray, out hit, wallCheckDistance, wallLayer))
-        {
-            Debug.Log("Wall detected: " + hit.collider.name);
-            return true;
-        }
-
-        return false;
+        bool hitLeft = CheckRay(leftCheckPoint, transform.forward, Color.red);
+        bool hitCenter = CheckRay(centerCheckPoint, transform.forward, Color.red);
+        bool hitRight = CheckRay(rightCheckPoint, transform.forward, Color.red);
+        
+        return hitLeft || hitCenter || hitRight;
     }
+
     bool IsWallBehind()
     {
-        Ray ray = new Ray(wallCheckPoint.position, -transform.forward);
+        bool hitLeft = CheckRay(leftCheckPoint, -transform.forward, Color.blue);
+        bool hitCenter = CheckRay(centerCheckPoint, -transform.forward, Color.blue);
+        bool hitRight = CheckRay(rightCheckPoint, -transform.forward, Color.blue);
+        
+        return hitLeft || hitCenter || hitRight;
+    }
+
+    bool CheckRay(Transform point, Vector3 direction, Color debugColor)
+    {
+        if (point == null) return false;
+
+        Ray ray = new Ray(point.position, direction);
         RaycastHit hit;
 
-        Debug.DrawRay(wallCheckPoint.position, -transform.forward * wallCheckDistance, Color.blue);
+        // Vẽ tia trong Play mode
+        Debug.DrawRay(point.position, direction * wallCheckDistance, debugColor);
 
         if (Physics.Raycast(ray, out hit, wallCheckDistance, wallLayer))
         {
-            Debug.Log("Wall behind: " + hit.collider.name);
+            Debug.Log($"<color=yellow>[Raycast Hit]</color> {point.name} hit {hit.collider.name} at distance {hit.distance}");
             return true;
         }
-
         return false;
     }
+
+    void DrawDebugRays()
+    {
+        DrawPointRay(leftCheckPoint);
+        DrawPointRay(centerCheckPoint);
+        DrawPointRay(rightCheckPoint);
+    }
+
+    void DrawPointRay(Transform point)
+    {
+        if (point == null) return;
+        Debug.DrawRay(point.position, transform.forward * wallCheckDistance, Color.red);
+        Debug.DrawRay(point.position, -transform.forward * wallCheckDistance, Color.blue);
+    }
+
+    // Hiển thị tia ngay cả khi không nhấn Play (Editor mode)
+    void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        DrawGizmoRay(leftCheckPoint, transform.forward);
+        DrawGizmoRay(centerCheckPoint, transform.forward);
+        DrawGizmoRay(rightCheckPoint, transform.forward);
+
+        Gizmos.color = Color.blue;
+        DrawGizmoRay(leftCheckPoint, -transform.forward);
+        DrawGizmoRay(centerCheckPoint, -transform.forward);
+        DrawGizmoRay(rightCheckPoint, -transform.forward);
+    }
+
+    void DrawGizmoRay(Transform point, Vector3 direction)
+    {
+        if (point != null)
+        {
+            Gizmos.DrawRay(point.position, direction * wallCheckDistance);
+        }
+    }
+
     void Move()
     {
         float v = Input.GetAxis("Vertical");
+        if (Mathf.Abs(v) < 0.01f) return;
 
-        // chặn khi đi tới
+        // Chặn khi đi tới
         if (v > 0 && IsWallAhead())
         {
-            LogDebug("Blocked by wall ahead");
             return;
         }
 
-        // chặn khi lùi
+        // Chặn khi lùi
         if (v < 0 && IsWallBehind())
         {
-            LogDebug("Blocked by wall behind");
             return;
         }
 
@@ -136,7 +188,7 @@ public class ControllerTank : MonoBehaviour
             transform.forward *
             v *
             Movespeed *
-            Time.deltaTime;
+            Time.fixedDeltaTime;
 
         TankEngine.MovePosition(TankEngine.position + move);
     }
@@ -145,7 +197,7 @@ public class ControllerTank : MonoBehaviour
     {
         float r = Input.GetAxis("Horizontal") *
                   RotateSpeed *
-                  Time.deltaTime;
+                  Time.fixedDeltaTime;
 
         Quaternion rotate = Quaternion.Euler(0, r, 0);
         TankEngine.MoveRotation(TankEngine.rotation * rotate);
@@ -241,18 +293,26 @@ public class ControllerTank : MonoBehaviour
     void Update()
     {
         UpdateStatusEffects();
+        UpdateShield();
+        
+        // Luôn hiển thị tia Raycast để debug trong Scene view
+        DrawDebugRays();
+        
+        // Input logic and non-physics updates
+        RotateTower();
+        Fire();
+        SwitchWeapon();
+    }
+
+    void FixedUpdate()
+    {
         if (isKnockedBack || isStunned)
         {
-            UpdateShield();
             return;
         }
 
         Move();
         Rotate();
-        RotateTower();
-        Fire();
-        SwitchWeapon();
-        UpdateShield();
     }
 
     void UpdateStatusEffects()
