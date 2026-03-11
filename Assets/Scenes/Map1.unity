@@ -32796,7 +32796,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4235464762511528, guid: bcad0cf325d81ad4aa73fbbe3ec47e8b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.40955997
+      value: 1.051
       objectReference: {fileID: 0}
     - target: {fileID: 4235464762511528, guid: bcad0cf325d81ad4aa73fbbe3ec47e8b, type: 3}
       propertyPath: m_LocalPosition.z
@@ -59632,6 +59632,7 @@ GameObject:
   - component: {fileID: 817726214}
   - component: {fileID: 817726213}
   - component: {fileID: 817726212}
+  - component: {fileID: 817726218}
   m_Layer: 0
   m_Name: tank
   m_TagString: Player
@@ -59694,6 +59695,10 @@ MonoBehaviour:
   isShield: 0
   stunEffectPoints: []
   knockbackResistance: 1
+  raycastDistance: 1.5
+  wallLayer:
+    serializedVersion: 2
+    m_Bits: 128
 --- !u!65 &817726214
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -59723,7 +59728,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 817726211}
   serializedVersion: 5
-  m_Mass: 6000
+  m_Mass: 5
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -59738,10 +59743,10 @@ Rigidbody:
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 2
+  m_IsKinematic: 1
+  m_Interpolate: 1
+  m_Constraints: 116
+  m_CollisionDetection: 3
 --- !u!4 &817726217
 Transform:
   m_ObjectHideFlags: 0
@@ -59751,7 +59756,7 @@ Transform:
   m_GameObject: {fileID: 817726211}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 121.2, y: 2.14956, z: -0.2793}
+  m_LocalPosition: {x: 262, y: 0, z: -120.7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -59761,6 +59766,28 @@ Transform:
   - {fileID: 1865320833}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!195 &817726218
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 817726211}
+  m_Enabled: 1
+  m_AgentTypeID: -1372625422
+  m_Radius: 0.5
+  m_Speed: 3.5
+  m_Acceleration: 8
+  avoidancePriority: 50
+  m_AngularSpeed: 120
+  m_StoppingDistance: 0
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 2
+  m_BaseOffset: 0
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4
 --- !u!1001 &819586449
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -91030,13 +91057,17 @@ PrefabInstance:
       propertyPath: m_Name
       value: Caterpillar_1_LP
       objectReference: {fileID: 0}
+    - target: {fileID: 1706002548971550, guid: 55669c46ee37d7441afcc4c769d651fe, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4017135707188624, guid: 55669c46ee37d7441afcc4c769d651fe, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.7666693
       objectReference: {fileID: 0}
     - target: {fileID: 4017135707188624, guid: 55669c46ee37d7441afcc4c769d651fe, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1.24956
+      value: 0.011
       objectReference: {fileID: 0}
     - target: {fileID: 4017135707188624, guid: 55669c46ee37d7441afcc4c769d651fe, type: 3}
       propertyPath: m_LocalPosition.z

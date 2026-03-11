@@ -82,24 +82,97 @@ public class ControllerTank : MonoBehaviour
         ApplyGlobalScale();
     }
 
+    [Header("Raycast Settings")]
+    public float raycastDistance = 1.5f; // Khoảng cách để dừng lại (tùy kích thước Tank)
+    public LayerMask wallLayer;        // Chỉ định Layer của Tường để tránh Raycast tự va vào chính mình
+
     void Move()
     {
-        Vector3 move = transform.forward *
-                       Input.GetAxis("Vertical") *
-                       Movespeed *
-                       Time.deltaTime;
+        // float v = Input.GetAxis("Vertical");
+        // if (Mathf.Abs(v) < 0.01f) return;
 
-        TankEngine.MovePosition(TankEngine.position + move);
+        // Vector3 moveStep = transform.forward * v * Movespeed * Time.fixedDeltaTime;
+
+        // // Tạo một điểm kiểm tra ở phía trước Tank
+        // // raycastDistance nên lớn hơn một chút so với khoảng cách từ tâm Tank đến mũi Tank
+        // float checkDist = 0.6f;
+        // Vector3 checkPos = transform.position + transform.forward * Mathf.Sign(v) * checkDist + Vector3.up * 0.5f;
+
+        // // Kiểm tra xem phía trước có "Wall" không
+        // if (Physics.CheckSphere(checkPos, 0.2f, wallLayer))
+        // {
+        //     // Nếu có tường, ta gán vận tốc về 0 và không thực hiện MovePosition
+        //     TankEngine.linearVelocity = new Vector3(0, TankEngine.linearVelocity.y, 0);
+        //     return;
+        // }
+
+        // // Nếu đường trống, thực hiện di chuyển
+        // TankEngine.MovePosition(TankEngine.position + moveStep);
+
+        float v = Input.GetAxis("Vertical");
+        if (Mathf.Abs(v) < 0.01f) return;
+
+        Vector3 direction = transform.forward * Mathf.Sign(v);
+        float distance = Movespeed * Time.fixedDeltaTime + 0.1f; // Tốc độ hiện tại cộng thêm một khoảng đệm
+
+        // Quét một hình hộp về phía trước trước khi di chuyển
+        bool isBlocked = Physics.BoxCast(
+            transform.position + Vector3.up * 0.5f,
+            transform.localScale * 0.45f, // Hơi nhỏ hơn kích thước Tank một chút để tránh kẹt giả
+            direction,
+            transform.rotation,
+            distance,
+            wallLayer
+        );
+
+        if (!isBlocked)
+        {
+            TankEngine.MovePosition(TankEngine.position + transform.forward * v * Movespeed * Time.fixedDeltaTime);
+        }
     }
+
+    // void Move()
+    // {
+    //     // Vector3 move = transform.forward *
+    //     //                Input.GetAxis("Vertical") *
+    //     //                Movespeed *
+    //     //                Time.deltaTime;
+
+    //     // TankEngine.MovePosition(TankEngine.position + move);
+
+    //     // Sử dụng Time.fixedDeltaTime thay vì deltaTime
+    //     Vector3 move = transform.forward * Input.GetAxis("Vertical") * Movespeed * Time.fixedDeltaTime;
+    //     TankEngine.MovePosition(TankEngine.position + move);
+    // }
 
     void Rotate()
     {
-        float r = Input.GetAxis("Horizontal") *
-                  RotateSpeed *
-                  Time.deltaTime;
+        // float r = Input.GetAxis("Horizontal") *
+        //           RotateSpeed *
+        //           Time.deltaTime;
 
-        Quaternion rotate = Quaternion.Euler(0, r, 0);
-        TankEngine.MoveRotation(TankEngine.rotation * rotate);
+        // Quaternion rotate = Quaternion.Euler(0, r, 0);
+        // TankEngine.MoveRotation(TankEngine.rotation * rotate);
+
+        float horizontalInput = Input.GetAxis("Horizontal");
+
+        // Chỉ tính toán khi người chơi thực sự nhấn phím xoay
+        if (Mathf.Abs(horizontalInput) > 0.01f)
+        {
+            float r = horizontalInput * RotateSpeed * Time.fixedDeltaTime;
+
+            // Tính toán vòng quay mới
+            Quaternion deltaRotation = Quaternion.Euler(0, r, 0);
+            Quaternion targetRotation = TankEngine.rotation * deltaRotation;
+
+            // Sử dụng MoveRotation để Engine vật lý xử lý va chạm mượt mà
+            TankEngine.MoveRotation(targetRotation);
+        }
+        else
+        {
+            // Khi không nhấn xoay, triệt tiêu vận tốc góc để tránh bị lực tác động làm xoay Tank ngoài ý muốn
+            TankEngine.angularVelocity = Vector3.zero;
+        }
     }
 
     void RotateTower()
@@ -191,19 +264,26 @@ public class ControllerTank : MonoBehaviour
 
     void Update()
     {
+        // Chỉ đọc Input và xử lý Logic không liên quan vật lý ở đây
         UpdateStatusEffects();
+        RotateTower();
+        Fire();
+        SwitchWeapon();
+        UpdateShield();
+    }
+
+    void FixedUpdate()
+    {
+        // Xử lý di chuyển vật lý ở đây để đồng bộ với Engine
         if (isKnockedBack || isStunned)
         {
-            UpdateShield();
+            // Xử lý knockback bằng MovePosition trong FixedUpdate
+            TankEngine.MovePosition(TankEngine.position + knockbackVelocity * Time.fixedDeltaTime);
             return;
         }
 
         Move();
         Rotate();
-        RotateTower();
-        Fire();
-        SwitchWeapon();
-        UpdateShield();
     }
 
     void UpdateStatusEffects()
@@ -245,10 +325,10 @@ public class ControllerTank : MonoBehaviour
             if (shieldObject != null)
             {
                 shieldObject.SetActive(false);
-        }
+            }
 
-        LogDebug("Shield Ä‘Ã£ háº¿t!");
-    }
+            LogDebug("Shield Ä‘Ã£ háº¿t!");
+        }
     }
     /// collect item 
     public void AddCoin(int amount)
