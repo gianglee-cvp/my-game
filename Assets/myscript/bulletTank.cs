@@ -362,7 +362,7 @@ public static class ProjectilePool
             if (pooled == null) continue;
 
             pooled.transform.SetPositionAndRotation(position, rotation);
-            pooled.SetActive(true);
+            pooled.SetActive(true); 
             return pooled;
         }
 
