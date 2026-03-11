@@ -90,19 +90,34 @@ public class EnemyAI : MonoBehaviour
             LogDebug("Found player: " + playerObj.name);
             player = playerObj.transform;
         }
+        rb = GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            // Ngăn địch bị đổ nhào khi va chạm (chỉ cho phép xoay quanh trục Y)
+            rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+            
+            // Hạ thấp trọng tâm để địch không bị "bay" hoặc lật khi đụng map/enemy khác
+            rb.centerOfMass = new Vector3(0, -0.7f, 0);
+            
+            // Sử dụng Interpolate để chuyển động mượt mà hơn
+            rb.interpolation = RigidbodyInterpolation.Interpolate;
+        }
+
         if (type == EnemyType.Shooter)
         {
             agent = GetComponent<NavMeshAgent>();
             ApplyGlobalSpeed();
-            agent.stoppingDistance = stopRange;
-            agent.updateRotation = false;
+            if (agent != null)
+            {
+                agent.stoppingDistance = stopRange;
+                agent.updateRotation = false;
+            }
             ProjectilePool.Prewarm(bullet, bulletPrewarmCount);
         }
         else if (type == EnemyType.Bomber)
         {
-            rb = GetComponent<Rigidbody>();
-            rb.useGravity = false;      // KhÃ´ng cho rÆ¡i
-            isAscending = true;         // Báº¯t Ä‘áº§u bay lÃªn
+            if (rb != null) rb.useGravity = false;      // Không cho rơi
+            isAscending = true;         // Bắt đầu bay lên
             bomberSpawnTime = Time.time;
             CacheBomberBombTemplateIfNeeded();
             if (bomberBombTemplate != null)
@@ -586,7 +601,6 @@ public class EnemyAI : MonoBehaviour
         {
             isAscending = true;
             bomberSpawnTime = Time.time;
-            if (rb == null) rb = GetComponent<Rigidbody>();
             if (rb != null)
             {
                 rb.useGravity = false;
@@ -597,11 +611,15 @@ public class EnemyAI : MonoBehaviour
 
         if (type == EnemyType.Shooter)
         {
-            if (agent == null) agent = GetComponent<NavMeshAgent>();
             if (agent != null && agent.enabled && agent.isOnNavMesh)
             {
                 agent.isStopped = false;
                 agent.velocity = Vector3.zero;
+            }
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
             }
         }
     }

@@ -102,11 +102,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI
   type: 0
   player: {fileID: 0}
-  moveSpeed: 5
+  moveSpeed: 10
   rotateSpeed: 5
   detectionRange: 501.7
-  stopRange: 10
-  shootRange: 20
+  stopRange: 20
+  shootRange: 30
   flyHeight: 7
   ascendSpeed: 3
   bomberLifetime: 15

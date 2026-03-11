@@ -9,7 +9,8 @@ public class ControllerTank : MonoBehaviour
     private ProceduralForceFieldOverlay shieldOverlay;
 
     public float Movespeed = 8f;
-    float RotateSpeed = 60f;
+    public float RotateSpeed = 60f;
+    public float extraDownForce = 15f; // Giảm lực nhấn xuống để tránh bị dính chặt/giật
 
     Rigidbody TankEngine;
 
@@ -51,11 +52,10 @@ public class ControllerTank : MonoBehaviour
     private float knockbackTimer = 0f;
     private Vector3 knockbackVelocity = Vector3.zero;
     private Vector3 baseLocalScale;
-    public float wallCheckDistance = 3f;
+    public float wallCheckDistance = 1.5f;
+    public Vector3 wallCheckBoxSize = new Vector3(2.5f, 1.5f, 0.5f);
     public LayerMask wallLayer;
-    public Transform leftCheckPoint;
     public Transform centerCheckPoint;
-    public Transform rightCheckPoint;
 
     void Awake()
     {
@@ -75,11 +75,14 @@ public class ControllerTank : MonoBehaviour
 
         if (TankEngine != null)
         {
-            // Ngăn Tank bị đổ nhào khi đi vào địa hình gồ ghề (chỉ cho phép xoay quanh trục Y)
+            // Ngăn Tank bị đổ nhào (chỉ cho phép xoay quanh trục Y)
             TankEngine.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
             
-            // Hạ thấp trọng tâm để xe bám đường tốt hơn (tùy chọn)
-            TankEngine.centerOfMass = new Vector3(0, -0.5f, 0);
+            // Hạ thấp trọng tâm vừa đủ (không nên quá sâu gây dính đất)
+            TankEngine.centerOfMass = new Vector3(0, -0.7f, 0);
+            
+            // Đảm bảo xe dùng Interpolate để mượt mà
+            TankEngine.interpolation = RigidbodyInterpolation.Interpolate;
         }
 
         if (bulletPrefabs != null && prewarmPerBulletPrefab > 0)
@@ -97,74 +100,71 @@ public class ControllerTank : MonoBehaviour
     }
     bool IsWallAhead()
     {
-        bool hitLeft = CheckRay(leftCheckPoint, transform.forward, Color.red);
-        bool hitCenter = CheckRay(centerCheckPoint, transform.forward, Color.red);
-        bool hitRight = CheckRay(rightCheckPoint, transform.forward, Color.red);
-        
-        return hitLeft || hitCenter || hitRight;
+        return CheckBoxCast(transform.forward, Color.red);
     }
 
     bool IsWallBehind()
     {
-        bool hitLeft = CheckRay(leftCheckPoint, -transform.forward, Color.blue);
-        bool hitCenter = CheckRay(centerCheckPoint, -transform.forward, Color.blue);
-        bool hitRight = CheckRay(rightCheckPoint, -transform.forward, Color.blue);
-        
-        return hitLeft || hitCenter || hitRight;
+        return CheckBoxCast(-transform.forward, Color.blue);
     }
 
-    bool CheckRay(Transform point, Vector3 direction, Color debugColor)
+    bool CheckBoxCast(Vector3 direction, Color debugColor)
     {
-        if (point == null) return false;
+        if (centerCheckPoint == null) return false;
 
-        Ray ray = new Ray(point.position, direction);
         RaycastHit hit;
+        // Nâng vị trị quét lên một chút (0.5f) để không quét trúng mặt đất khi leo dốc
+        Vector3 sourcePos = centerCheckPoint.position + Vector3.up * 0.5f;
 
-        // Vẽ tia trong Play mode
-        Debug.DrawRay(point.position, direction * wallCheckDistance, debugColor);
+        bool isHit = Physics.BoxCast(
+            sourcePos,
+            wallCheckBoxSize / 2,
+            direction,
+            out hit,
+            transform.rotation,
+            wallCheckDistance,
+            wallLayer
+        );
 
-        if (Physics.Raycast(ray, out hit, wallCheckDistance, wallLayer))
+        if (isHit)
         {
-            Debug.Log($"<color=yellow>[Raycast Hit]</color> {point.name} hit {hit.collider.name} at distance {hit.distance}");
-            return true;
+            Debug.Log($"<color=orange>[BoxCast Hit]</color> {hit.collider.name} at {hit.distance}m");
         }
-        return false;
+
+        return isHit;
     }
 
     void DrawDebugRays()
     {
-        DrawPointRay(leftCheckPoint);
-        DrawPointRay(centerCheckPoint);
-        DrawPointRay(rightCheckPoint);
+        // Debug.DrawRay vẫn có thể dùng để chỉ hướng tâm
+        if (centerCheckPoint != null)
+        {
+            Debug.DrawRay(centerCheckPoint.position, transform.forward * wallCheckDistance, Color.red);
+            Debug.DrawRay(centerCheckPoint.position, -transform.forward * wallCheckDistance, Color.blue);
+        }
     }
 
-    void DrawPointRay(Transform point)
-    {
-        if (point == null) return;
-        Debug.DrawRay(point.position, transform.forward * wallCheckDistance, Color.red);
-        Debug.DrawRay(point.position, -transform.forward * wallCheckDistance, Color.blue);
-    }
-
-    // Hiển thị tia ngay cả khi không nhấn Play (Editor mode)
+    // Hiển thị Box quét trong Scene View
     void OnDrawGizmos()
     {
+        if (centerCheckPoint == null) return;
+
+        // Lưu Matrix cũ để xoay Gizmos theo xe
+        Matrix4x4 oldMatrix = Gizmos.matrix;
+        Gizmos.matrix = Matrix4x4.TRS(centerCheckPoint.position, transform.rotation, Vector3.one);
+
+        // Vẽ Box phía trước (Màu đỏ)
         Gizmos.color = Color.red;
-        DrawGizmoRay(leftCheckPoint, transform.forward);
-        DrawGizmoRay(centerCheckPoint, transform.forward);
-        DrawGizmoRay(rightCheckPoint, transform.forward);
+        Vector3 aheadCenter = Vector3.forward * wallCheckDistance;
+        Gizmos.DrawWireCube(aheadCenter, wallCheckBoxSize);
 
+        // Vẽ Box phía sau (Màu xanh)
         Gizmos.color = Color.blue;
-        DrawGizmoRay(leftCheckPoint, -transform.forward);
-        DrawGizmoRay(centerCheckPoint, -transform.forward);
-        DrawGizmoRay(rightCheckPoint, -transform.forward);
-    }
+        Vector3 behindCenter = -Vector3.forward * wallCheckDistance;
+        Gizmos.DrawWireCube(behindCenter, wallCheckBoxSize);
 
-    void DrawGizmoRay(Transform point, Vector3 direction)
-    {
-        if (point != null)
-        {
-            Gizmos.DrawRay(point.position, direction * wallCheckDistance);
-        }
+        // Trả lại Matrix cũ
+        Gizmos.matrix = oldMatrix;
     }
 
     void Move()
@@ -199,8 +199,13 @@ public class ControllerTank : MonoBehaviour
                   RotateSpeed *
                   Time.fixedDeltaTime;
 
-        Quaternion rotate = Quaternion.Euler(0, r, 0);
-        TankEngine.MoveRotation(TankEngine.rotation * rotate);
+        // Chỉ cho phép xoay quanh trục Y, ép X và Z về 0
+        float currentY = transform.rotation.eulerAngles.y;
+        TankEngine.MoveRotation(Quaternion.Euler(0, currentY + r, 0));
+        
+        // Triệt tiêu vận tốc góc X và Z để đảm bảo không bị lực lạ làm nghiêng xe
+        Vector3 av = TankEngine.angularVelocity;
+        TankEngine.angularVelocity = new Vector3(0, av.y, 0);
     }
 
     void RotateTower()
@@ -306,6 +311,11 @@ public class ControllerTank : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (TankEngine == null) return;
+
+        // Thêm lực nhấn xuống vừa phải
+        TankEngine.AddForce(Vector3.down * extraDownForce, ForceMode.Acceleration);
+
         if (isKnockedBack || isStunned)
         {
             return;
@@ -313,6 +323,13 @@ public class ControllerTank : MonoBehaviour
 
         Move();
         Rotate();
+        
+        // Chỉ cưỡng bức góc xoay nếu lệch quá lớn để tránh rung giật (jittering)
+        Quaternion currentRot = transform.rotation;
+        if (Mathf.Abs(currentRot.x) > 0.1f || Mathf.Abs(currentRot.z) > 0.1f)
+        {
+            TankEngine.MoveRotation(Quaternion.Euler(0, currentRot.eulerAngles.y, 0));
+        }
     }
 
     void UpdateStatusEffects()

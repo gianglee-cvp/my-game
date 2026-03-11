@@ -6023,10 +6023,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAITest
   type: 0
   player: {fileID: 0}
-  moveSpeed: 5
+  moveSpeed: 10
   rotateSpeed: 5
   detectionRange: 500
-  stopRange: 10
+  stopRange: 20
   shootRange: 30
   flyHeight: 7
   ascendSpeed: 3

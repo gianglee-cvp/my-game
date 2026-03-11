@@ -3282,7 +3282,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI
   type: 1
   player: {fileID: 0}
-  moveSpeed: 15
+  moveSpeed: 18
   rotateSpeed: 5
   detectionRange: 501.5
   stopRange: 10.5
