@@ -1,50 +1,109 @@
 using UnityEngine;
-using TMPro;
-using System.Collections;
+using UnityEngine.SceneManagement;
+
+public enum GameState
+{
+    MainMenu,
+    LevelSelect,
+    Playing,
+    Shop,
+    Paused,
+    GameOver
+}
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
-    [Header("Wave UI Settings")]
-    public TMP_Text waveText;
-    public float blinkDuration = 3f;
-    public float blinkInterval = 0.3f;
+    [Header("Game State")]
+    public GameState currentState = GameState.MainMenu;
 
-    private void Awake()
+    public delegate void OnStateChanged(GameState newState);
+    public event OnStateChanged OnGameStateChanged;
+
+    void Awake()
     {
         if (Instance == null)
         {
             Instance = this;
+            DontDestroyOnLoad(gameObject);
         }
         else
         {
             Destroy(gameObject);
         }
-
-        if (waveText != null) waveText.enabled = false;
     }
 
-    public void ShowWaveAnnouncement(int waveNumber)
+    void Start()
     {
-        if (waveText == null) return;
-
-        StopAllCoroutines();
-        StartCoroutine(BlinkRoutine(waveNumber));
+        ChangeState(currentState);
     }
 
-    private IEnumerator BlinkRoutine(int waveNumber)
+    public void ChangeState(GameState newState)
     {
-        waveText.text = "WAVE " + waveNumber;
-        float elapsed = 0f;
+        if (currentState == newState) return;
 
-        while (elapsed < blinkDuration)
+        currentState = newState;
+
+        switch (currentState)
         {
-            waveText.enabled = !waveText.enabled;
-            yield return new WaitForSeconds(blinkInterval);
-            elapsed += blinkInterval;
+            case GameState.MainMenu:
+            case GameState.LevelSelect:
+            case GameState.Shop:
+            case GameState.Paused:
+            case GameState.GameOver:
+                Time.timeScale = 0f;
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+                break;
+
+            case GameState.Playing:
+                Time.timeScale = 1f;
+                Cursor.visible = true;
+                break;
         }
 
-        waveText.enabled = false;
+        OnGameStateChanged?.Invoke(currentState);
+
+        Debug.Log("[GameManager] State Changed to: " + newState);
+    }
+
+    // ===== UI FUNCTIONS =====
+
+    public void PlayButton()
+    {
+        ChangeState(GameState.LevelSelect);
+    }
+
+    public void BackToMenu()
+    {
+        ChangeState(GameState.MainMenu);
+        SceneManager.LoadScene("MainMenu");
+    }
+
+    public void LoadLevel(string levelName)
+    {
+        SceneManager.LoadScene(levelName);
+        ChangeState(GameState.Playing);
+    }
+
+    public void OpenShop()
+    {
+        ChangeState(GameState.Shop);
+    }
+
+    public void PauseGame()
+    {
+        ChangeState(GameState.Paused);
+    }
+
+    public void ResumeGame()
+    {
+        ChangeState(GameState.Playing);
+    }
+
+    public void QuitGame()
+    {
+        Application.Quit();
     }
 }

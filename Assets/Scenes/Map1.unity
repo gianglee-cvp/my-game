@@ -59387,6 +59387,7 @@ MonoBehaviour:
   assignPlayerToBoss: 1
   player: {fileID: 817726217}
   assignSpawnerToBoss: 0
+  waveUI: {fileID: 0}
   currentWave: 0
 --- !u!114 &828699986
 MonoBehaviour:
@@ -59426,9 +59427,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 828699982}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 76c6247e508994e8088968d7f3f9513f, type: 3}
+  m_Script: {fileID: 11500000, guid: d6ee1ad1aad824f4984ea5be35d29d7b, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GameManager
+  m_EditorClassIdentifier: Assembly-CSharp::WaveBlinkUI
   waveText: {fileID: 315095438}
   blinkDuration: 3
   blinkInterval: 0.3

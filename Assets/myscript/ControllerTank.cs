@@ -297,6 +297,9 @@ public class ControllerTank : MonoBehaviour
 
     void Update()
     {
+        if (GameManager.Instance != null && GameManager.Instance.currentState != GameState.Playing)
+            return;
+
         UpdateStatusEffects();
         UpdateShield();
         
@@ -312,6 +315,13 @@ public class ControllerTank : MonoBehaviour
     void FixedUpdate()
     {
         if (TankEngine == null) return;
+
+        if (GameManager.Instance != null && GameManager.Instance.currentState != GameState.Playing)
+        {
+            TankEngine.linearVelocity = Vector3.zero;
+            TankEngine.angularVelocity = Vector3.zero;
+            return;
+        }
 
         // Thêm lực nhấn xuống vừa phải
         TankEngine.AddForce(Vector3.down * extraDownForce, ForceMode.Acceleration);

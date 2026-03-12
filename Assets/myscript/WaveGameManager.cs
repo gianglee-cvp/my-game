@@ -22,6 +22,7 @@ public class WaveGameManager : MonoBehaviour
     public bool assignSpawnerToBoss = false;
 
     [Header("UI Reference")]
+    public WaveBlinkUI waveUI;
     private int lastAnnouncedWave = 0;
 
     [Header("Runtime State")]
@@ -100,10 +101,10 @@ public class WaveGameManager : MonoBehaviour
 
     private void HandleWaveStarted(int waveNumber)
     {
-        if (GameManager.Instance != null && waveNumber > lastAnnouncedWave)
+        if (waveUI != null && waveNumber > lastAnnouncedWave)
         {
             lastAnnouncedWave = waveNumber;
-            GameManager.Instance.ShowWaveAnnouncement(waveNumber);
+            waveUI.StartBlink(waveNumber);
         }
     }
 
