@@ -28,6 +28,7 @@ public class EnemySpawner : MonoBehaviour
     private bool waveActive = false;
 
     public event System.Action<int> OnWaveCompleted;
+    public event System.Action<int> OnWaveStarted;
 
     public int CurrentWave => currentWave;
     public int ActiveWaveNumber => activeWaveNumber;
@@ -58,6 +59,7 @@ public class EnemySpawner : MonoBehaviour
         isSpawning = true;
         activeWaveNumber = currentWave;
         waveActive = true;
+        OnWaveStarted?.Invoke(activeWaveNumber);
         int amount = startEnemyCount * currentWave;
 
         for (int i = 0; i < amount; i++)

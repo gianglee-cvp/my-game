@@ -21,6 +21,9 @@ public class WaveGameManager : MonoBehaviour
     public Transform player;
     public bool assignSpawnerToBoss = false;
 
+    [Header("UI Reference")]
+    private int lastAnnouncedWave = 0;
+
     [Header("Runtime State")]
     [SerializeField] private int currentWave = 0;
 
@@ -74,6 +77,7 @@ public class WaveGameManager : MonoBehaviour
             EnemySpawner spawner = runtimeSpawners[i];
             if (spawner == null) continue;
             spawner.OnWaveCompleted += HandleWaveCompleted;
+            spawner.OnWaveStarted += HandleWaveStarted;
         }
     }
 
@@ -84,6 +88,7 @@ public class WaveGameManager : MonoBehaviour
             EnemySpawner spawner = runtimeSpawners[i];
             if (spawner == null) continue;
             spawner.OnWaveCompleted -= HandleWaveCompleted;
+            spawner.OnWaveStarted -= HandleWaveStarted;
         }
     }
 
@@ -91,6 +96,15 @@ public class WaveGameManager : MonoBehaviour
     {
         UpdateCurrentWaveState();
         TrySpawnBossFromWaveProgress();
+    }
+
+    private void HandleWaveStarted(int waveNumber)
+    {
+        if (GameManager.Instance != null && waveNumber > lastAnnouncedWave)
+        {
+            lastAnnouncedWave = waveNumber;
+            GameManager.Instance.ShowWaveAnnouncement(waveNumber);
+        }
     }
 
     private void TrySpawnBossFromWaveProgress()
