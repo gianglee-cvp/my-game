@@ -432,7 +432,7 @@ MonoBehaviour:
   player: {fileID: 0}
   moveSpeed: 8
   rotateSpeed: 5
-  detectionRange: 505.9
+  detectionRange: 5000
   stopRange: 10
   shootRange: 55.1
   bullet: {fileID: 3200511878250533640, guid: 09d529a9d4890493887c0d86f6235f8b, type: 3}
