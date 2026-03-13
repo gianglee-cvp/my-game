@@ -18,6 +18,11 @@ public class GameManager : MonoBehaviour
     [Header("Game State")]
     public GameState currentState = GameState.MainMenu;
 
+    [Header("UI Panels (Menu Scene Only)")]
+    public GameObject mainMenuPanel;
+    public GameObject levelSelectPanel;
+    public GameObject shopPanel;
+
     public delegate void OnStateChanged(GameState newState);
     public event OnStateChanged OnGameStateChanged;
 
@@ -37,6 +42,19 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         ChangeState(currentState);
+    }
+
+    void Update()
+    {
+        // Tự động quản lý ẩn/hiện mọi Panel dựa trên GameState
+        if (mainMenuPanel != null)
+            mainMenuPanel.SetActive(currentState == GameState.MainMenu);
+
+        if (levelSelectPanel != null)
+            levelSelectPanel.SetActive(currentState == GameState.LevelSelect);
+
+        if (shopPanel != null)
+            shopPanel.SetActive(currentState == GameState.Shop);
     }
 
     public void ChangeState(GameState newState)
@@ -75,14 +93,36 @@ public class GameManager : MonoBehaviour
         ChangeState(GameState.LevelSelect);
     }
 
+    [Header("Scene Settings")]
+    public string menuSceneName = "Menu";
+
     public void BackToMenu()
     {
+        Debug.Log("[GameManager] BackToMenu called. Current Scene: " + SceneManager.GetActiveScene().name);
         ChangeState(GameState.MainMenu);
-        SceneManager.LoadScene("MainMenu");
+        
+        // Chỉ load lại scene nếu chúng ta KHÔNG ở trong scene Menu
+        if (SceneManager.GetActiveScene().name != menuSceneName)
+        {
+            if (Application.CanStreamedLevelBeLoaded(menuSceneName))
+            {
+                SceneManager.LoadScene(menuSceneName);
+            }
+            else
+            {
+                Debug.LogError("[GameManager] Scene '" + menuSceneName + "' not found in Build Settings!");
+            }
+        }
     }
 
     public void LoadLevel(string levelName)
     {
+        if (string.IsNullOrEmpty(levelName))
+        {
+            Debug.LogError("[GameManager] Scene name is empty!");
+            return;
+        }
+        Debug.Log("[GameManager] Loading Scene: " + levelName);
         SceneManager.LoadScene(levelName);
         ChangeState(GameState.Playing);
     }
