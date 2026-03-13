@@ -9,6 +9,7 @@ public class TankShopData
     public string tankId;
     public string tankName;
     [TextArea] public string description;
+    public GameObject tankPrefab; // Thêm Prefab 3D để hiển thị trong Shop
     public Sprite previewSprite;
     public int price;
 }
@@ -25,8 +26,13 @@ public class TankShopUI : MonoBehaviour
     public TMP_Text priceText;
     public TMP_Text coinText;
     public Image tankPreviewImage;
-    public Button actionButton; // Nút Buy hoặc Select
+    public Button actionButton; 
     public TMP_Text actionButtonText;
+
+    [Header("3D Preview")]
+    public Transform previewPoint; // Điểm đặt xe tăng 3D trong Shop
+    public float rotationSpeed = 50f;
+    private GameObject currentPreviewObject;
 
     private int currentIndex = 0;
 
@@ -59,11 +65,42 @@ public class TankShopUI : MonoBehaviour
         UpdateShopDisplay(currentIndex);
     }
 
+    private void Update()
+    {
+        // Làm cho xe tăng trong Shop tự xoay tròn
+        if (currentPreviewObject != null)
+        {
+            currentPreviewObject.transform.Rotate(Vector3.up, rotationSpeed * Time.unscaledDeltaTime);
+        }
+    }
+
     public void UpdateShopDisplay(int index)
     {
         if (tankItems == null || index < 0 || index >= tankItems.Count) return;
 
         TankShopData data = tankItems[index];
+
+        // Xử lý hiển thị 3D
+        if (previewPoint != null)
+        {
+            if (currentPreviewObject != null) Destroy(currentPreviewObject);
+
+            if (data.tankPrefab != null)
+            {
+                currentPreviewObject = Instantiate(data.tankPrefab, previewPoint.position, previewPoint.rotation, previewPoint);
+                currentPreviewObject.SetActive(true); 
+                currentPreviewObject.transform.localScale = Vector3.one * 4f; // Chỉnh scale xe tăng lên 4
+                
+                // Tắt các script điều khiển để xe không tự chạy trong Shop
+                MonoBehaviour[] scripts = currentPreviewObject.GetComponentsInChildren<MonoBehaviour>();
+                foreach (var s in scripts)
+                {
+                    // Tắt hết script trừ script Rotate nếu có
+                    if (s != null && s.GetType().Name != "ItemRotate") s.enabled = false;
+                }
+            }
+        }
+
         if (tankNameText != null) tankNameText.text = data.tankName;
         if (tankDescriptionText != null) tankDescriptionText.text = data.description;
         if (tankPreviewImage != null) tankPreviewImage.sprite = data.previewSprite;
