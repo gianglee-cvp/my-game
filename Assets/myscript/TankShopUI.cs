@@ -10,7 +10,6 @@ public class TankShopData
     public string tankName;
     [TextArea] public string description;
     public GameObject tankPrefab; // Thêm Prefab 3D để hiển thị trong Shop
-    public Sprite previewSprite;
     public int price;
 }
 
@@ -24,10 +23,11 @@ public class TankShopUI : MonoBehaviour
     public TMP_Text tankNameText;
     public TMP_Text tankDescriptionText;
     public TMP_Text priceText;
+    public TMP_Text statusText;
     public TMP_Text coinText;
-    public Image tankPreviewImage;
     public Button actionButton; 
     public TMP_Text actionButtonText;
+    public Button backButton;
 
     [Header("3D Preview")]
     public Transform previewPoint; // Điểm đặt xe tăng 3D trong Shop
@@ -49,6 +49,11 @@ public class TankShopUI : MonoBehaviour
         if (actionButton != null)
         {
             actionButton.onClick.AddListener(OnActionButtonClicked);
+        }
+
+        if (backButton != null)
+        {
+            backButton.onClick.AddListener(GoBack);
         }
 
         UpdateShopDisplay(0);
@@ -103,10 +108,9 @@ public class TankShopUI : MonoBehaviour
 
         if (tankNameText != null) tankNameText.text = data.tankName;
         if (tankDescriptionText != null) tankDescriptionText.text = data.description;
-        if (tankPreviewImage != null) tankPreviewImage.sprite = data.previewSprite;
         
         if (coinText != null && SaveSystem.Data != null) 
-            coinText.text = "Coins: " + SaveSystem.Data.coins;
+            coinText.text = SaveSystem.Data.coins.ToString();
 
         UpdateActionButtonState(data);
     }
@@ -122,18 +126,40 @@ public class TankShopUI : MonoBehaviour
         {
             actionButtonText.text = "SELECTED";
             actionButton.interactable = false;
-            if (priceText != null) priceText.text = "CURRENT TANK";
+            
+            if (priceText != null) priceText.gameObject.SetActive(false);
+            if (statusText != null) 
+            {
+                statusText.gameObject.SetActive(true);
+                statusText.text = "CURRENT TANK";
+            }
         }
         else if (isUnlocked)
         {
             actionButtonText.text = "SELECT";
             actionButton.interactable = true;
-            if (priceText != null) priceText.text = "UNLOCKED";
+            
+            if (priceText != null) priceText.gameObject.SetActive(false);
+            if (statusText != null) 
+            {
+                statusText.gameObject.SetActive(true);
+                statusText.text = "UNLOCKED";
+            }
         }
         else
         {
             actionButtonText.text = "BUY";
-            if (priceText != null) priceText.text = data.price.ToString() + " COINS";
+            
+            if (priceText != null) 
+            {
+                priceText.gameObject.SetActive(true);
+                priceText.text = data.price.ToString() + " COINS";
+            }
+            if (statusText != null) 
+            {
+                statusText.gameObject.SetActive(true);
+                statusText.text = "LOCKED";
+            }
             
             // Log giá tiền ra Console để kiểm tra
             Debug.Log("[Shop] Tank: " + data.tankName + " | Price: " + data.price + " | Coins: " + SaveSystem.Data.coins);
