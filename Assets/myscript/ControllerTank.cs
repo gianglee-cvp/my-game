@@ -390,6 +390,8 @@ public class ControllerTank : MonoBehaviour
     public void AddCoin(int amount)
     {
         coinCount += amount;
+        SaveSystem.Data.coins += amount;
+        SaveSystem.Save();  
         LogDebug("Player nháº­n " + amount + " coin. Tá»•ng coin: " + coinCount);
     }
 

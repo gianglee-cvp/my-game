@@ -35,7 +35,17 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            Destroy(gameObject);
+            // If we just loaded the Menu scene, keep the scene instance so UI button references stay valid.
+            if (gameObject.scene.name == menuSceneName)
+            {
+                Destroy(Instance.gameObject);
+                Instance = this;
+                DontDestroyOnLoad(gameObject);
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
         }
     }
 
@@ -46,6 +56,15 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
+      //  Debug.Log("[GameManager] Current State: " + currentState);
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            Debug.Log("[GameManager] Current State: " + currentState);
+            if (currentState == GameState.Playing)
+                PauseGame();
+            else if (currentState == GameState.Paused)
+                ResumeGame();
+        }   
         // Tự động quản lý ẩn/hiện mọi Panel dựa trên GameState
         if (mainMenuPanel != null)
             mainMenuPanel.SetActive(currentState == GameState.MainMenu);
@@ -65,7 +84,6 @@ public class GameManager : MonoBehaviour
 
         switch (currentState)
         {
-            case GameState.MainMenu:
             case GameState.LevelSelect:
             case GameState.Shop:
             case GameState.Paused:
@@ -74,7 +92,20 @@ public class GameManager : MonoBehaviour
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
                 break;
-
+            case GameState.MainMenu:
+                Debug.Log("[GameManager] Entering Main Menu. Resetting Time Scale and Cursor.");
+                if (mainMenuPanel != null)
+                {
+                    mainMenuPanel.SetActive(true);
+                }
+                else
+                {
+                    Debug.LogWarning("[GameManager] mainMenuPanel is not assigned in this scene.");
+                }
+                Time.timeScale = 1f;
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+                break;
             case GameState.Playing:
                 Time.timeScale = 1f;
                 Cursor.visible = true;
@@ -98,9 +129,7 @@ public class GameManager : MonoBehaviour
 
     public void BackToMenu()
     {
-        Debug.Log("[GameManager] BackToMenu called. Current Scene: " + SceneManager.GetActiveScene().name);
-        ChangeState(GameState.MainMenu);
-        
+
         // Chỉ load lại scene nếu chúng ta KHÔNG ở trong scene Menu
         if (SceneManager.GetActiveScene().name != menuSceneName)
         {
@@ -113,6 +142,8 @@ public class GameManager : MonoBehaviour
                 Debug.LogError("[GameManager] Scene '" + menuSceneName + "' not found in Build Settings!");
             }
         }
+        Debug.Log("[GameManager] BackToMenu called. Current Scene: " + SceneManager.GetActiveScene().name);
+        ChangeState(GameState.MainMenu);
     }
 
     public void LoadLevel(string levelName)
@@ -149,4 +180,5 @@ public class GameManager : MonoBehaviour
         UnityEditor.EditorApplication.isPlaying = false;
 #endif
     }
+
 }
