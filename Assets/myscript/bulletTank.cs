@@ -135,7 +135,7 @@ public class bulletTank : MonoBehaviour
     {
         if (homingTarget == null)
         {
-            FindNearestBomber();
+            FindTarget();
         }
 
         if (homingTarget != null)
@@ -146,26 +146,48 @@ public class bulletTank : MonoBehaviour
         }
     }
 
-    private void FindNearestBomber()
+    private void FindTarget()
     {
+        // Prioritize Bosses
+        GameObject[] bosses = GameObject.FindGameObjectsWithTag("Boss");
+        float minBossDist = targetSearchRange;
+        Transform nearestBoss = null;
+
+        foreach (GameObject boss in bosses)
+        {
+            float dist = Vector3.Distance(transform.position, boss.transform.position);
+            if (dist < minBossDist)
+            {
+                minBossDist = dist;
+                nearestBoss = boss.transform;
+            }
+        }
+
+        if (nearestBoss != null)
+        {
+            homingTarget = nearestBoss;
+            return;
+        }
+
+        // Fallback to Bombers
         EnemyAI[] enemies = Object.FindObjectsByType<EnemyAI>(FindObjectsSortMode.None);
-        float minDistance = targetSearchRange;
-        Transform nearest = null;
+        float minBomberDist = targetSearchRange;
+        Transform nearestBomber = null;
 
         foreach (var enemy in enemies)
         {
             if (enemy.type == EnemyAI.EnemyType.Bomber)
             {
                 float dist = Vector3.Distance(transform.position, enemy.transform.position);
-                if (dist < minDistance)
+                if (dist < minBomberDist)
                 {
-                    minDistance = dist;
-                    nearest = enemy.transform;
+                    minBomberDist = dist;
+                    nearestBomber = enemy.transform;
                 }
             }
         }
 
-        homingTarget = nearest;
+        homingTarget = nearestBomber;
     }
 
     void OnTriggerEnter(Collider other)
