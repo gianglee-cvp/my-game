@@ -59538,9 +59538,9 @@ MonoBehaviour:
   coinPrefab: {fileID: 8837197096670884196, guid: 8747eedb976c04f8fb1bb22aa262dc57, type: 3}
   crossPrefab: {fileID: 6919342491426724733, guid: 5bd594853da24414181ee99b819747e8, type: 3}
   shieldPrefab: {fileID: 6154742551517215908, guid: 02b2a82c28b624d919a70ccbfa99ad42, type: 3}
-  coinCount: 20
-  crossCount: 6
-  shieldCount: 10
+  coinCount: 0
+  crossCount: 0
+  shieldCount: 0
   spawnAreaCenter: {x: -208, y: 0, z: 0}
   spawnAreaSize: {x: 300, y: 0, z: 60}
   blockedLayers:
@@ -59552,6 +59552,17 @@ MonoBehaviour:
   maxAttemptsPerItem: 80
   yOffset: 0.05
   shuffleSpawnOrder: 1
+  noDropWeight: 80
+  dropTable:
+  - name: Coin
+    prefab: {fileID: 8837197096670884196, guid: 8747eedb976c04f8fb1bb22aa262dc57, type: 3}
+    weight: 10
+  - name: Shield
+    prefab: {fileID: 6154742551517215908, guid: 02b2a82c28b624d919a70ccbfa99ad42, type: 3}
+    weight: 20
+  - name: HP
+    prefab: {fileID: 6919342491426724733, guid: 5bd594853da24414181ee99b819747e8, type: 3}
+    weight: 20
 --- !u!114 &828699987
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -62860,7 +62871,7 @@ GameObject:
   - component: {fileID: 928608602}
   m_Layer: 7
   m_Name: Lines
-  m_TagString: Untagged
+  m_TagString: b
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
@@ -103726,7 +103737,7 @@ GameObject:
   - component: {fileID: 1958939935}
   m_Layer: 7
   m_Name: Tiles
-  m_TagString: Untagged
+  m_TagString: b
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
@@ -104237,7 +104248,7 @@ GameObject:
   - component: {fileID: 1987115732}
   m_Layer: 7
   m_Name: Terrain
-  m_TagString: Untagged
+  m_TagString: b
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647

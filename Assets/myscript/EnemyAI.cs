@@ -60,12 +60,16 @@ public class EnemyAI : MonoBehaviour
     private Vector3 bombTemplateLocalPosition;
     private Quaternion bombTemplateLocalRotation = Quaternion.identity;
     private Vector3 bombTemplateLocalScale = Vector3.one;
+    private HP myHP;
+    private ItemSpawnManager itemSpawner;
 
     void Awake()
     {
         baseLocalScale = transform.localScale;
         baseMoveSpeed = moveSpeed;
         baseRotateSpeed = rotateSpeed;
+        myHP = GetComponent<HP>();
+        itemSpawner = Object.FindFirstObjectByType<ItemSpawnManager>();
     }
 
     void OnEnable()
@@ -75,11 +79,32 @@ public class EnemyAI : MonoBehaviour
         ResetRuntimeState();
         CacheBomberBombTemplateIfNeeded();
         EnsureBomberCarriesBombIfMissing();
+
+        if (type == EnemyType.Shooter && myHP != null)
+        {
+            myHP.OnDied += HandleDeath;
+        }
+    }
+
+    void OnDisable()
+    {
+        if (myHP != null)
+        {
+            myHP.OnDied -= HandleDeath;
+        }
+    }
+
+    private void HandleDeath()
+    {
+        // Chi shooter moi duoc drop item
+        if (type == EnemyType.Shooter && itemSpawner != null)
+        {
+            itemSpawner.SpawnItemAtTransform(transform);
+        }
     }
 
     void Start()
     {
-
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj == null)
         {
@@ -448,14 +473,10 @@ public class EnemyAI : MonoBehaviour
             GameObject bombObject = bombScript.gameObject;
             bombObject.transform.SetParent(null);
 
-            Rigidbody bombRb = bombObject.GetComponent<Rigidbody>();
-            if (bombRb == null)
-                bombRb = bombObject.AddComponent<Rigidbody>();
-
-            bombRb.isKinematic = false;
-            bombRb.useGravity = false;
-
-            bombScript.LaunchAtTarget(player);
+            if (player != null)
+            {
+                bombScript.LaunchStraightAtPosition(player.position);
+            }
 
             // âœ… Bá» qua collision giá»¯a bom vÃ  enemy Ä‘Ã£ drop nÃ³
             // â†’ TrÃ¡nh bom ná»• ngay khi vá»«a tÃ¡ch ra khá»i enemy

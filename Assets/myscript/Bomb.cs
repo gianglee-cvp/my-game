@@ -72,6 +72,31 @@ public class Bomb : MonoBehaviour
         if (target == null)
             return;
 
+        SetupRigidbodyForLaunch();
+
+        homingTarget = target;
+        isHoming = true;
+    }
+
+    public void LaunchStraightAtPosition(Vector3 targetPos)
+    {
+        SetupRigidbodyForLaunch();
+
+        Vector3 direction = targetPos - rb.position;
+        if (direction.sqrMagnitude > 0.001f)
+        {
+            rb.linearVelocity = direction.normalized * homingSpeed;
+        }
+        else
+        {
+            rb.linearVelocity = Vector3.zero;
+        }
+
+        isHoming = false;
+    }
+
+    private void SetupRigidbodyForLaunch()
+    {
         if (rb == null)
             rb = GetComponent<Rigidbody>();
 
@@ -92,9 +117,6 @@ public class Bomb : MonoBehaviour
         Collider[] bombColliders = GetComponentsInChildren<Collider>();
         foreach (Collider col in bombColliders)
             col.isTrigger = false;
-
-        homingTarget = target;
-        isHoming = true;
     }
 
     private void OnCollisionEnter(Collision collision)

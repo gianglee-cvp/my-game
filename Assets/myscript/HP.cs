@@ -9,6 +9,7 @@ public class HP : MonoBehaviour
     [SerializeField] private float currentHP;
 
     public event Action<float, float> OnHealthChanged;
+    public event Action OnDied;
 
     public float CurrentHP => currentHP;
     public float MaxHP => maxHP;
@@ -56,6 +57,8 @@ public class HP : MonoBehaviour
     void Die()
     {
         LogDebug(gameObject.name + " Destroyed!");
+        OnDied?.Invoke();
+
         PooledEnemy pooledEnemy = GetComponent<PooledEnemy>();
         if (pooledEnemy != null)
         {

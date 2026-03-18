@@ -13,7 +13,7 @@ public class ItemSpawnManager : MonoBehaviour
     [Min(0)] public int coinCount = 20;
     [Min(0)] public int crossCount = 6;
     [Min(0)] public int shieldCount = 10;
-
+    
     [Header("Spawn Area")]
     public Vector3 spawnAreaCenter = Vector3.zero;
     public Vector3 spawnAreaSize = new Vector3(60f, 0f, 60f);
@@ -28,7 +28,64 @@ public class ItemSpawnManager : MonoBehaviour
     public float yOffset = 0.05f;
     public bool shuffleSpawnOrder = true;
 
+    [Header("Drop Table")]
+    public float noDropWeight = 50f;
+    public List<DropItem> dropTable = new List<DropItem>();
+
+    [System.Serializable]
+    public class DropItem
+    {
+        public string name;
+        public GameObject prefab;
+        public float weight = 10f;
+    }
+
     private readonly List<Vector3> acceptedPositions = new List<Vector3>();
+
+    public void SpawnItemAtTransform(Transform target)
+    {
+        if (target == null) return;
+
+        GameObject itemPrefab = GetRandomItemPrefab();
+        if (itemPrefab == null) return;
+
+        // Spawn tai vi tri enemy voi yOffset (cung y voi item spawn luc dau game)
+        Vector3 spawnPos = target.position;
+        spawnPos.y = yOffset;
+
+        Instantiate(itemPrefab, spawnPos, Quaternion.identity, transform);
+    }
+
+    private GameObject GetRandomItemPrefab()
+    {
+        if (dropTable == null || dropTable.Count == 0) return null;
+
+        float totalWeight = noDropWeight;
+        foreach (var item in dropTable)
+        {
+            if (item.prefab != null)
+                totalWeight += item.weight;
+        }
+
+        if (totalWeight <= 0f) return null;
+
+        float randomValue = Random.Range(0f, totalWeight);
+        float currentWeight = noDropWeight;
+
+        // Neu random rơi vao noDropWeight thi return null
+        if (randomValue < currentWeight)
+            return null;
+
+        foreach (var item in dropTable)
+        {
+            if (item.prefab == null) continue;
+            currentWeight += item.weight;
+            if (randomValue < currentWeight)
+                return item.prefab;
+        }
+
+        return null;
+    }
 
     private void Start()
     {
