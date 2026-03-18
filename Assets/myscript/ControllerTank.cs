@@ -40,6 +40,12 @@ public class ControllerTank : MonoBehaviour
     public bool isShield = false;
     private float shieldTimer = 0f;
 
+    [Header("Special Ammo System")]
+    public int specialAmmoCount = 0;
+    public int specialBulletIndex = 1;
+    [Min(0.01f)] public float specialFireCooldown = 0.5f;
+    private float nextSpecialFireTime = 0f;
+
     [Header("Debuff (from enemy bullets)")]
     public Transform[] stunEffectPoints;
     public float knockbackResistance = 1f;
@@ -295,6 +301,40 @@ public class ControllerTank : MonoBehaviour
         }
     }
 
+    void SpecialFire()
+    {
+        if (!Input.GetKey(KeyCode.Space)) return;
+        if (specialAmmoCount <= 0) return;
+        if (Time.time < nextSpecialFireTime) return;
+
+        if (bulletPrefabs == null || specialBulletIndex < 0 || specialBulletIndex >= bulletPrefabs.Length)
+        {
+            Debug.LogWarning("Index Ä‘áº¡n Ä‘áº·c biá»‡t khÃ´ng há»£p lá»‡: " + specialBulletIndex);
+            return;
+        }
+
+        specialAmmoCount--;
+        nextSpecialFireTime = Time.time + specialFireCooldown;
+
+        for (int i = 0; i < ShootFX.Length; i++)
+        {
+            ShootFX[i].Play();
+        }
+
+        GameObject bulletInstance = ProjectilePool.Spawn(
+            bulletPrefabs[specialBulletIndex],
+            shootElement.position,
+            shootElement.rotation
+        );
+
+        bulletTank bulletScript = bulletInstance.GetComponentInChildren<bulletTank>();
+        if (bulletScript != null)
+        {
+            bulletScript.bulletTeam = Team.Player;
+            bulletScript.bulletType = BulletType.CurvedHoming; // Explicitly set type for special bullet
+        }
+    }
+
     void Update()
     {
         if (GameManager.Instance != null && GameManager.Instance.currentState != GameState.Playing)
@@ -309,6 +349,7 @@ public class ControllerTank : MonoBehaviour
         // Input logic and non-physics updates
         RotateTower();
         Fire();
+        SpecialFire();
         SwitchWeapon();
     }
 
@@ -393,6 +434,12 @@ public class ControllerTank : MonoBehaviour
         SaveSystem.Data.coins += amount;
         SaveSystem.Save();  
         LogDebug("Player nháº­n " + amount + " coin. Tá»•ng coin: " + coinCount);
+    }
+
+    public void AddSpecialAmmo(int amount)
+    {
+        specialAmmoCount += amount;
+        LogDebug("Player nháº­n " + amount + " Ä‘áº¡n Ä‘áº·c biá»‡t. Tá»•ng ammo: " + specialAmmoCount);
     }
 
     public void ActivateShield(float duration)

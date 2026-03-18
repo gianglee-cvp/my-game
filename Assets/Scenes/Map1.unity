@@ -58920,6 +58920,9 @@ MonoBehaviour:
   minPlayerFireInterval: 0.05
   coinCount: 0
   isShield: 0
+  specialAmmoCount: 0
+  specialBulletIndex: 1
+  specialFireCooldown: 0.5
   stunEffectPoints: []
   knockbackResistance: 1
   wallCheckDistance: 1.1
@@ -59538,9 +59541,11 @@ MonoBehaviour:
   coinPrefab: {fileID: 8837197096670884196, guid: 8747eedb976c04f8fb1bb22aa262dc57, type: 3}
   crossPrefab: {fileID: 6919342491426724733, guid: 5bd594853da24414181ee99b819747e8, type: 3}
   shieldPrefab: {fileID: 6154742551517215908, guid: 02b2a82c28b624d919a70ccbfa99ad42, type: 3}
+  specialAmmoPrefab: {fileID: 6758942177785770564, guid: 19f01fe2ba5094bd5803af811de54399, type: 3}
   coinCount: 0
   crossCount: 0
   shieldCount: 0
+  specialAmmoCount: 4
   spawnAreaCenter: {x: -208, y: 0, z: 0}
   spawnAreaSize: {x: 300, y: 0, z: 60}
   blockedLayers:
@@ -59563,6 +59568,9 @@ MonoBehaviour:
   - name: HP
     prefab: {fileID: 6919342491426724733, guid: 5bd594853da24414181ee99b819747e8, type: 3}
     weight: 20
+  - name: star
+    prefab: {fileID: 6758942177785770564, guid: 19f01fe2ba5094bd5803af811de54399, type: 3}
+    weight: 80
 --- !u!114 &828699987
 MonoBehaviour:
   m_ObjectHideFlags: 0

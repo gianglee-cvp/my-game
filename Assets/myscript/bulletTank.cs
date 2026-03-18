@@ -13,7 +13,8 @@ public enum BulletType
     Normal,
     Tesla,
     Plougher,
-    rocket
+    rocket,
+    CurvedHoming
 }
 
 public class bulletTank : MonoBehaviour
@@ -55,6 +56,11 @@ public class bulletTank : MonoBehaviour
 
     [Header("Info")]
     public string bulletName = "Tank Bullet";
+
+    [Header("Homing Settings")]
+    public float steerSpeed = 5f;
+    public float targetSearchRange = 100f;
+    private Transform homingTarget;
 
     Rigidbody bulletEngine;
     private Vector3 baseBulletScale;
@@ -111,6 +117,11 @@ public class bulletTank : MonoBehaviour
 
     void Update()
     {
+        if (bulletType == BulletType.CurvedHoming)
+        {
+            UpdateHoming();
+        }
+
         transform.position += transform.forward * speed * Time.deltaTime;
 
         destroyTime -= Time.deltaTime;
@@ -118,6 +129,43 @@ public class bulletTank : MonoBehaviour
         {
             DestroyBullet();
         }
+    }
+
+    private void UpdateHoming()
+    {
+        if (homingTarget == null)
+        {
+            FindNearestBomber();
+        }
+
+        if (homingTarget != null)
+        {
+            Vector3 direction = (homingTarget.position - transform.position).normalized;
+            Quaternion targetRotation = Quaternion.LookRotation(direction);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, steerSpeed * Time.deltaTime);
+        }
+    }
+
+    private void FindNearestBomber()
+    {
+        EnemyAI[] enemies = Object.FindObjectsByType<EnemyAI>(FindObjectsSortMode.None);
+        float minDistance = targetSearchRange;
+        Transform nearest = null;
+
+        foreach (var enemy in enemies)
+        {
+            if (enemy.type == EnemyAI.EnemyType.Bomber)
+            {
+                float dist = Vector3.Distance(transform.position, enemy.transform.position);
+                if (dist < minDistance)
+                {
+                    minDistance = dist;
+                    nearest = enemy.transform;
+                }
+            }
+        }
+
+        homingTarget = nearest;
     }
 
     void OnTriggerEnter(Collider other)
@@ -186,7 +234,22 @@ public class bulletTank : MonoBehaviour
             }
             if (hp != null)
             {
-                hp.TakeDamage(damage);
+                if (bulletType == BulletType.CurvedHoming)
+                {
+                    EnemyAI enemy = other.GetComponentInParent<EnemyAI>();
+                    if (enemy != null && enemy.type == EnemyAI.EnemyType.Bomber)
+                    {
+                        hp.TakeDamage(hp.MaxHP /2);
+                    }
+                    else
+                    {
+                        hp.TakeDamage(damage);
+                    }
+                }
+                else
+                {
+                    hp.TakeDamage(damage);
+                }
             }
 
             // ⚡ Tesla: gây stun cho enemy (không dùng hiệu ứng)

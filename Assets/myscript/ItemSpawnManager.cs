@@ -8,11 +8,13 @@ public class ItemSpawnManager : MonoBehaviour
     public GameObject coinPrefab;
     public GameObject crossPrefab;
     public GameObject shieldPrefab;
+    public GameObject specialAmmoPrefab;
 
     [Header("Startup Counts")]
     [Min(0)] public int coinCount = 20;
     [Min(0)] public int crossCount = 6;
     [Min(0)] public int shieldCount = 10;
+    [Min(0)] public int specialAmmoCount = 4;
     
     [Header("Spawn Area")]
     public Vector3 spawnAreaCenter = Vector3.zero;
@@ -128,10 +130,11 @@ public class ItemSpawnManager : MonoBehaviour
 
     private List<GameObject> BuildSpawnQueue()
     {
-        List<GameObject> queue = new List<GameObject>(coinCount + crossCount + shieldCount);
+        List<GameObject> queue = new List<GameObject>(coinCount + crossCount + shieldCount + specialAmmoCount);
         AddItems(queue, coinPrefab, coinCount);
         AddItems(queue, crossPrefab, crossCount);
         AddItems(queue, shieldPrefab, shieldCount);
+        AddItems(queue, specialAmmoPrefab, specialAmmoCount);
         return queue;
     }
 

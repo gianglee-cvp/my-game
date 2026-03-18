@@ -6,7 +6,8 @@ public class Spin : MonoBehaviour
     {
         Coin,
         Cross,
-        Shield
+        Shield,
+        SpecialAmmo
     }
 
     public ItemType itemType;
@@ -42,7 +43,7 @@ public class Spin : MonoBehaviour
             other.transform.root.CompareTag("Player") ||
             player.CompareTag("Player");
         if (!isPlayerHit) return;
-
+        Debug.Log("Player hit item " + itemType);
         switch (itemType)
         {
             case ItemType.Coin:
@@ -59,6 +60,10 @@ public class Spin : MonoBehaviour
                     hp = player.GetComponentInParent<HP>();
                 if (hp != null)
                     hp.Heal(50f);
+                break;
+
+            case ItemType.SpecialAmmo:
+                player.AddSpecialAmmo(10);
                 break;
         }
 

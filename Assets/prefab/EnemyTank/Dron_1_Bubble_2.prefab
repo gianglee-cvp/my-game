@@ -3195,6 +3195,7 @@ GameObject:
   - component: {fileID: 2149697518183927607}
   - component: {fileID: 2840079843930865775}
   - component: {fileID: 2362561637911097235}
+  - component: {fileID: 8738548464530632129}
   m_Layer: 3
   m_Name: Dron_1_Bubble_2
   m_TagString: Enemy
@@ -3300,3 +3301,18 @@ MonoBehaviour:
   enableDebugLogs: 0
   stunEffectPoints: []
   knockbackResistance: 1
+--- !u!114 &8738548464530632129
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8831572787063034734}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d283b6163fda4b78967ced864064142, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HP
+  enableDebugLogs: 0
+  maxHP: 100
+  currentHP: 0
