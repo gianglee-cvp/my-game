@@ -178,7 +178,7 @@ Tank mới có thể có:
 1. Clone project:
 
 ```
-git clone <repository-url>
+git clone https://github.com/gianglee-cvp/my-game.git
 ```
 
 2. Mở project bằng **Unity**
