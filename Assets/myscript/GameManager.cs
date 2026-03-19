@@ -8,7 +8,8 @@ public enum GameState
     Playing,
     Shop,
     Paused,
-    GameOver
+    GameOver,
+    Victory
 }
 
 public class GameManager : MonoBehaviour
@@ -22,6 +23,8 @@ public class GameManager : MonoBehaviour
     public GameObject mainMenuPanel;
     public GameObject levelSelectPanel;
     public GameObject shopPanel;
+    public GameObject gameOverPanel;
+    public GameObject victoryPanel;
 
     public delegate void OnStateChanged(GameState newState);
     public event OnStateChanged OnGameStateChanged;
@@ -74,6 +77,12 @@ public class GameManager : MonoBehaviour
 
         if (shopPanel != null)
             shopPanel.SetActive(currentState == GameState.Shop);
+
+        if (gameOverPanel != null)
+            gameOverPanel.SetActive(currentState == GameState.GameOver);
+
+        if (victoryPanel != null)
+            victoryPanel.SetActive(currentState == GameState.Victory);
     }
 
     public void ChangeState(GameState newState)
@@ -88,6 +97,7 @@ public class GameManager : MonoBehaviour
             case GameState.Shop:
             case GameState.Paused:
             case GameState.GameOver:
+            case GameState.Victory:
                 Time.timeScale = 0f;
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
@@ -179,6 +189,37 @@ public class GameManager : MonoBehaviour
         #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #endif
+    }
+
+    public void RegisterInGameUI(GameObject gameOver, GameObject victory)
+    {
+        gameOverPanel = gameOver;
+        victoryPanel = victory;
+    }
+
+    public void TriggerGameOver()
+    {
+        if (currentState == GameState.GameOver || currentState == GameState.Victory) return;
+        
+        ChangeState(GameState.GameOver);
+        StartCoroutine(GameEndSequenceRoutine());
+    }
+
+    public void TriggerVictory()
+    {
+        if (currentState == GameState.GameOver || currentState == GameState.Victory) return;
+
+        ChangeState(GameState.Victory);
+        StartCoroutine(GameEndSequenceRoutine());
+    }
+
+    private System.Collections.IEnumerator GameEndSequenceRoutine()
+    {
+        // Sử dụng WaitForSecondsRealtime vì Time.timeScale bị set = 0 trong ChangeState
+        yield return new WaitForSecondsRealtime(3f);
+        
+        // Trở về menu
+        BackToMenu();
     }
 
 }

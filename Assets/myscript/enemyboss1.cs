@@ -58,11 +58,14 @@ public class enemyboss1 : MonoBehaviour
     private float baseMoveSpeed;
     private float baseRotateSpeed;
 
+    private HP myHP;
+
     void Awake()
     {
         baseLocalScale = transform.localScale;
         baseMoveSpeed = moveSpeed;
         baseRotateSpeed = rotateSpeed;
+        myHP = GetComponent<HP>();
     }
 
     void Start()
@@ -101,6 +104,27 @@ public class enemyboss1 : MonoBehaviour
     {
         ApplyGlobalSpeed();
         ApplyGlobalScale();
+
+        if (myHP != null)
+        {
+            myHP.OnDied += HandleDeath;
+        }
+    }
+
+    void OnDisable()
+    {
+        if (myHP != null)
+        {
+            myHP.OnDied -= HandleDeath;
+        }
+    }
+
+    private void HandleDeath()
+    {
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.TriggerVictory();
+        }
     }
 
     void Update()

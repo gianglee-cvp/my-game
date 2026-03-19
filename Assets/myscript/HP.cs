@@ -58,7 +58,11 @@ public class HP : MonoBehaviour
     {
         LogDebug(gameObject.name + " Destroyed!");
         OnDied?.Invoke();
-
+        if (gameObject.CompareTag("Player"))
+        {
+            Time.timeScale = 0f; // Pause the game
+            return ; 
+        }
         PooledEnemy pooledEnemy = GetComponent<PooledEnemy>();
         if (pooledEnemy != null)
         {

@@ -62,10 +62,12 @@ public class ControllerTank : MonoBehaviour
     public Vector3 wallCheckBoxSize = new Vector3(2.5f, 1.5f, 0.5f);
     public LayerMask wallLayer;
     public Transform centerCheckPoint;
+    private HP playerHP;
 
     void Awake()
     {
         baseLocalScale = transform.localScale;
+        playerHP = GetComponent<HP>();
     }
 
     void Start()
@@ -103,6 +105,26 @@ public class ControllerTank : MonoBehaviour
     void OnEnable()
     {
         ApplyGlobalScale();
+        if (playerHP != null)
+        {
+            playerHP.OnDied += HandleDeath;
+        }
+    }
+
+    void OnDisable()
+    {
+        if (playerHP != null)
+        {
+            playerHP.OnDied -= HandleDeath;
+        }
+    }
+
+    private void HandleDeath()
+    {
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.TriggerGameOver();
+        }
     }
     bool IsWallAhead()
     {

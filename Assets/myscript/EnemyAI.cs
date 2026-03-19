@@ -80,7 +80,7 @@ public class EnemyAI : MonoBehaviour
         CacheBomberBombTemplateIfNeeded();
         EnsureBomberCarriesBombIfMissing();
 
-        if (type == EnemyType.Shooter && myHP != null)
+        if (myHP != null)
         {
             myHP.OnDied += HandleDeath;
         }
