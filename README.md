@@ -57,6 +57,10 @@ Game sẽ ngày càng khó hơn khi số lượng và sức mạnh của kẻ đ
 * Bắn bằng **chuột trái**
 * Không giới hạn số lượng
 * Tốc độ bắn cố định
+* 3 loại đạn
+* **GB_piercer_rocket_root  : hiệu ứng đẩy lùi và bắn xuyên mục tiêu**
+* **GB_plougher_bullet_root  : hiệu ứng nổ , sát thương lan sang các enemy trong vùng nổ**
+* **Tesla_tank_Bullet  : Gây sát thương và có hiệu ứng choáng làm địch đứng yên và không bắn được nữa**
 
 ## ⭐ Đạn đặc biệt
 
@@ -68,7 +72,9 @@ Mỗi lần nhặt Star sẽ nhận:
 10 viên đạn đặc biệt
 ```
 
-Đạn đặc biệt có **sát thương cao hơn đạn thường**.
+**Đạn đặc biệt có sát thương cao hơn , quỹ đạo vòng vèo bám đuổi mục tiêu**
+
+  
 
 ---
 
@@ -127,6 +133,7 @@ Trong game có nhiều loại kẻ địch:
 
 * Xuất hiện ở các wave lớn
 * Máu nhiều và sát thương cao
+* Có các hiệu ứng bắn đạn đặc biệ : bắn nhiều đạn bắn nhiều hướng, bắn đạn đặc biệt 
 
 ---
 
