@@ -60,7 +60,7 @@ public class bulletTank : MonoBehaviour
     [Header("Homing Settings")]
     public float steerSpeed = 5f;
     public float targetSearchRange = 100f;
-    private Transform homingTarget;
+    public Transform homingTarget;
 
     Rigidbody bulletEngine;
     private Vector3 baseBulletScale;
@@ -68,6 +68,7 @@ public class bulletTank : MonoBehaviour
     private float runtimeScaleFactor = 1f;
     private Vector3 baseLocalPosition;
     private Quaternion baseLocalRotation;
+    private HP targetHP;
 
     void Awake()
     {
@@ -90,6 +91,9 @@ public class bulletTank : MonoBehaviour
 
     void OnEnable()
     {
+        // Clear target state when re-enabled (from pool)
+        ClearTarget();
+
         // Only reset local transform for nested bullets (root-wrapper prefabs like rocket/plougher).
         // For root bullets (e.g. Tesla), keep spawn world rotation from shootElement.
         if (transform.parent != null)
@@ -115,6 +119,16 @@ public class bulletTank : MonoBehaviour
         }
     }
 
+    void OnDisable()
+    {
+        ClearTarget();
+    }
+
+    void OnDestroy()
+    {
+        ClearTarget();
+    }
+
     void Update()
     {
         if (bulletType == BulletType.CurvedHoming)
@@ -133,61 +147,130 @@ public class bulletTank : MonoBehaviour
 
     private void UpdateHoming()
     {
-        if (homingTarget == null)
+        if (homingTarget == null || !homingTarget.gameObject.activeInHierarchy)
         {
+            if (homingTarget != null) ClearTarget();
             FindTarget();
         }
 
         if (homingTarget != null)
         {
+            // Range check
+            float dist = Vector3.Distance(transform.position, homingTarget.position);
+            if (dist > targetSearchRange)
+            {
+                ClearTarget();
+                return;
+            }
+
             Vector3 direction = (homingTarget.position - transform.position).normalized;
             Quaternion targetRotation = Quaternion.LookRotation(direction);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, steerSpeed * Time.deltaTime);
         }
     }
 
+    private void ClearTarget()
+    {
+        if (targetHP != null)
+        {
+            targetHP.OnDied -= HandleTargetDied;
+            targetHP = null;
+        }
+        homingTarget = null;
+    }
+
+    private void HandleTargetDied()
+    {
+        ClearTarget();
+    }
+
     private void FindTarget()
     {
-        // Prioritize Bosses
-        GameObject[] bosses = GameObject.FindGameObjectsWithTag("Boss");
-        float minBossDist = targetSearchRange;
-        Transform nearestBoss = null;
+        float closestBossDist = Mathf.Infinity;
+        float closestBomberDist = Mathf.Infinity;
+        float closestEnemyDist = Mathf.Infinity;
 
-        foreach (GameObject boss in bosses)
-        {
-            float dist = Vector3.Distance(transform.position, boss.transform.position);
-            if (dist < minBossDist)
-            {
-                minBossDist = dist;
-                nearestBoss = boss.transform;
-            }
-        }
+        Transform bossTarget = null;
+        Transform bomberTarget = null;
+        Transform enemyTarget = null;
 
-        if (nearestBoss != null)
-        {
-            homingTarget = nearestBoss;
-            return;
-        }
-
-        // Fallback to Bombers
         EnemyAI[] enemies = Object.FindObjectsByType<EnemyAI>(FindObjectsSortMode.None);
-        float minBomberDist = targetSearchRange;
-        Transform nearestBomber = null;
 
         foreach (var enemy in enemies)
         {
-            if (enemy.type == EnemyAI.EnemyType.Bomber)
+            if (enemy == null || !enemy.gameObject.activeInHierarchy) continue;
+
+            // Kiểm tra HP nếu có, bỏ qua nếu đã chết
+            HP enemyHP = enemy.GetComponent<HP>();
+            if (enemyHP != null && enemyHP.CurrentHP <= 0) continue;
+
+            float dist = Vector3.Distance(transform.position, enemy.transform.position);
+
+            // Skip nếu ngoài range
+            if (dist > targetSearchRange) continue;
+
+            // Boss (ưu tiên cao nhất)
+            if (enemy.CompareTag("Boss"))
             {
-                float dist = Vector3.Distance(transform.position, enemy.transform.position);
-                if (dist < minBomberDist)
+                if (dist < closestBossDist)
                 {
-                    minBomberDist = dist;
-                    nearestBomber = enemy.transform;
+                    closestBossDist = dist;
+                    bossTarget = enemy.transform;
+                }
+            }
+            // Bomber
+            else if (enemy.type == EnemyAI.EnemyType.Bomber)
+            {
+                if (dist < closestBomberDist)
+                {
+                    closestBomberDist = dist;
+                    bomberTarget = enemy.transform;
+                }
+            }
+            // Enemy thường
+            else
+            {
+                if (dist < closestEnemyDist)
+                {
+                    closestEnemyDist = dist;
+                    enemyTarget = enemy.transform;
                 }
             }
         }
 
-        homingTarget = nearestBomber;
+        // Ưu tiên
+        Transform selectedTarget = null;
+        if (bossTarget != null)
+            selectedTarget = bossTarget;
+        else if (bomberTarget != null)
+            selectedTarget = bomberTarget;
+        else
+            selectedTarget = enemyTarget;
+
+        if (selectedTarget != null)
+        {
+            SetTarget(selectedTarget);
+        }
+    }
+
+    private void SetTarget(Transform target)
+    {
+        ClearTarget();
+
+        homingTarget = target;
+        if (homingTarget != null)
+        {
+            targetHP = homingTarget.GetComponent<HP>();
+            if (targetHP == null)
+            {
+                targetHP = homingTarget.GetComponentInParent<HP>();
+            }
+
+            if (targetHP != null)
+            {
+                targetHP.OnDied += HandleTargetDied;
+            }
+        }
     }
 
     void OnTriggerEnter(Collider other)

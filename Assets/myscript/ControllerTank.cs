@@ -41,8 +41,8 @@ public class ControllerTank : MonoBehaviour
     private float shieldTimer = 0f;
 
     [Header("Special Ammo System")]
-    public int specialAmmoCount = 0;
-    public int specialBulletIndex = 1;
+    public int specialAmmoCount = 10;
+    public int specialBulletIndex = 0;
     [Min(0.01f)] public float specialFireCooldown = 0.5f;
     private float nextSpecialFireTime = 0f;
 
