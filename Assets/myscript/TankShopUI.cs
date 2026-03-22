@@ -9,7 +9,7 @@ public class TankShopData
     public string tankId;
     public string tankName;
     [TextArea] public string description;
-    public GameObject tankPrefab; // Thêm Prefab 3D để hiển thị trong Shop
+    public GameObject tankPrefab;
     public int price;
 }
 
@@ -29,13 +29,25 @@ public class TankShopUI : MonoBehaviour
     public TMP_Text actionButtonText;
     public Button backButton;
 
+    [Header("Tab Navigation")]
+    [Tooltip("Panel chứa nội dung mua xe tăng")]
+    public GameObject tankShopContentPanel;
+    [Tooltip("Panel chứa nội dung upgrade HP/Damage")]
+    public GameObject upgradeContentPanel;
+    [Tooltip("Script TankUpgradeUI gắn trên upgradeContentPanel")]
+    public TankUpgradeUI tankUpgradeUI;
+    public Button tabShopButton;
+    public Button tabUpgradeButton;
+
     [Header("3D Preview")]
-    public Transform previewPoint; // Điểm đặt xe tăng 3D trong Shop
+    public Transform previewPoint;
     public float rotationSpeed = 50f;
     private GameObject currentPreviewObject;
 
     private int currentIndex = 0;
+    private bool isOnUpgradeTab = false; // Theo dõi đang ở tab nào
 
+    // ---------------------------------------------------------------
     private void Start()
     {
         if (itemSlider != null)
@@ -47,38 +59,118 @@ public class TankShopUI : MonoBehaviour
         }
 
         if (actionButton != null)
-        {
             actionButton.onClick.AddListener(OnActionButtonClicked);
-        }
 
         if (backButton != null)
-        {
             backButton.onClick.AddListener(GoBack);
-        }
 
+        // Mặc định hiện tab Shop
+        ShowTab(false);
         UpdateShopDisplay(0);
     }
 
+    // ---------------------------------------------------------------
     private void OnEnable()
     {
+        SaveSystem.OnCoinChanged += UpdateCoinUI;
         UpdateShopDisplay(currentIndex);
+        UpdateCoinUI();
     }
 
+    private void OnDisable()
+    {
+        SaveSystem.OnCoinChanged -= UpdateCoinUI;
+    }
+
+    private void UpdateCoinUI()
+    {
+        if (coinText != null && SaveSystem.Data != null)
+            coinText.text = SaveSystem.Data.coins.ToString();
+    }
+
+    // ---------------------------------------------------------------
+    // Tab wrappers — gán vào OnClick trong Inspector
+    // ---------------------------------------------------------------
+
+    /// <summary>Gán vào OnClick của tabShopButton trong Inspector</summary>
+    public void ShowShopTab() => ShowTab(false);
+
+    /// <summary>Gán vào OnClick của tabUpgradeButton trong Inspector</summary>
+    public void ShowUpgradeTab() => ShowTab(true);
+
+    // ---------------------------------------------------------------
+    /// <summary>
+    /// Chuyển đổi giữa tab Shop và tab Upgrade.
+    /// Nếu cố vào Upgrade mà tank chưa unlock → tự chuyển về Shop.
+    /// </summary>
+    public void ShowTab(bool isUpgrade)
+    {
+        // ---- Guard: Không cho vào Upgrade nếu tank chưa unlock ----
+        if (isUpgrade && tankItems != null && currentIndex < tankItems.Count)
+        {
+            string tankId = tankItems[currentIndex].tankId;
+            if (!SaveSystem.Data.IsTankUnlocked(tankId))
+            {
+                Debug.Log($"[Shop] Tank '{tankId}' chưa unlock — không cho vào Upgrade.");
+                isUpgrade = false; // Force về Shop
+            }
+        }
+
+        isOnUpgradeTab = isUpgrade;
+
+        Debug.Log("ShowTab: " + (isUpgrade ? "UPGRADE" : "SHOP"));
+
+        if (tankShopContentPanel != null)
+            tankShopContentPanel.SetActive(!isUpgrade);
+        if (upgradeContentPanel != null)
+            upgradeContentPanel.SetActive(isUpgrade);
+
+        // Nếu vào Upgrade → load đúng tank hiện tại
+        if (isUpgrade && tankUpgradeUI != null)
+        {
+            string tankId = tankItems[currentIndex].tankId;
+            tankUpgradeUI.LoadTank(tankId);
+        }
+
+        UpdateCoinUI();
+    }
+
+    // ---------------------------------------------------------------
     private void OnSliderValueChanged(float value)
     {
         currentIndex = Mathf.RoundToInt(value);
         UpdateShopDisplay(currentIndex);
+
+        // ---- Xử lý tab khi đổi tank bằng slider ----
+        if (isOnUpgradeTab)
+        {
+            string tankId = tankItems[currentIndex].tankId;
+
+            if (SaveSystem.Data.IsTankUnlocked(tankId))
+            {
+                // Tank mới unlocked → giữ tab Upgrade, load data mới
+                if (tankUpgradeUI != null)
+                    tankUpgradeUI.LoadTank(tankId);
+            }
+            else
+            {
+                // Tank mới locked → tự chuyển về tab Shop
+                Debug.Log($"[Shop] Đổi sang tank '{tankId}' (locked) — chuyển về tab Shop.");
+                ShowTab(false);
+            }
+        }
     }
 
+    // ---------------------------------------------------------------
     private void Update()
     {
-        // Làm cho xe tăng trong Shop tự xoay tròn
         if (currentPreviewObject != null)
         {
             currentPreviewObject.transform.Rotate(Vector3.up, rotationSpeed * Time.unscaledDeltaTime);
         }
     }
 
+    // ---------------------------------------------------------------
     public void UpdateShopDisplay(int index)
     {
         if (tankItems == null || index < 0 || index >= tankItems.Count) return;
@@ -94,13 +186,11 @@ public class TankShopUI : MonoBehaviour
             {
                 currentPreviewObject = Instantiate(data.tankPrefab, previewPoint.position, previewPoint.rotation, previewPoint);
                 currentPreviewObject.SetActive(true); 
-                currentPreviewObject.transform.localScale = Vector3.one * 4f; // Chỉnh scale xe tăng lên 4
+                currentPreviewObject.transform.localScale = Vector3.one * 4f;
                 
-                // Tắt các script điều khiển để xe không tự chạy trong Shop
                 MonoBehaviour[] scripts = currentPreviewObject.GetComponentsInChildren<MonoBehaviour>();
                 foreach (var s in scripts)
                 {
-                    // Tắt hết script trừ script Rotate nếu có
                     if (s != null && s.GetType().Name != "ItemRotate") s.enabled = false;
                 }
             }
@@ -108,18 +198,17 @@ public class TankShopUI : MonoBehaviour
 
         if (tankNameText != null) tankNameText.text = data.tankName;
         if (tankDescriptionText != null) tankDescriptionText.text = data.description;
-        
-        if (coinText != null && SaveSystem.Data != null) 
-            coinText.text = SaveSystem.Data.coins.ToString();
 
+        UpdateCoinUI();
         UpdateActionButtonState(data);
     }
 
+    // ---------------------------------------------------------------
     private void UpdateActionButtonState(TankShopData data)
     {
         if (data == null || SaveSystem.Data == null || actionButton == null || actionButtonText == null) return;
 
-        bool isUnlocked = SaveSystem.Data.unlockedTankIds != null && SaveSystem.Data.unlockedTankIds.Contains(data.tankId);
+        bool isUnlocked = SaveSystem.Data.IsTankUnlocked(data.tankId);
         bool isSelected = SaveSystem.Data.selectedTankId == data.tankId;
 
         if (isSelected)
@@ -161,40 +250,36 @@ public class TankShopUI : MonoBehaviour
                 statusText.text = "LOCKED";
             }
             
-            // Log giá tiền ra Console để kiểm tra
-            Debug.Log("[Shop] Tank: " + data.tankName + " | Price: " + data.price + " | Coins: " + SaveSystem.Data.coins);
-            
             actionButton.interactable = SaveSystem.Data.coins >= data.price;
         }
     }
 
+    // ---------------------------------------------------------------
     public void OnActionButtonClicked()
     {
         TankShopData data = tankItems[currentIndex];
-        bool isUnlocked = SaveSystem.Data.unlockedTankIds.Contains(data.tankId);
+        bool isUnlocked = SaveSystem.Data.IsTankUnlocked(data.tankId);
 
         if (isUnlocked)
         {
-            // Chọn xe tăng
             SaveSystem.Data.selectedTankId = data.tankId;
             SaveSystem.Save();
             Debug.Log("Selected Tank: " + data.tankId);
         }
         else
         {
-            // Mua xe tăng
             if (SaveSystem.Data.coins >= data.price)
             {
-                SaveSystem.Data.coins -= data.price;
                 SaveSystem.Data.unlockedTankIds.Add(data.tankId);
                 SaveSystem.Data.selectedTankId = data.tankId;
-                SaveSystem.Save();
+                SaveSystem.ChangeCoins(-data.price);
                 Debug.Log("Purchased Tank: " + data.tankId);
             }
         }
         UpdateShopDisplay(currentIndex);
     }
 
+    // ---------------------------------------------------------------
     public void GoBack()
     {
         if (GameManager.Instance != null)
