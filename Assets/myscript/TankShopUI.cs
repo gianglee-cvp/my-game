@@ -209,7 +209,7 @@ public class TankShopUI : MonoBehaviour
         if (data == null || SaveSystem.Data == null || actionButton == null || actionButtonText == null) return;
 
         bool isUnlocked = SaveSystem.Data.IsTankUnlocked(data.tankId.ToString());
-        bool isSelected = SaveSystem.Data.selectedTankId == data.tankId.ToString();
+        bool isSelected = SaveSystem.SelectedTank == data.tankId;
 
         if (isSelected)
         {
@@ -262,8 +262,7 @@ public class TankShopUI : MonoBehaviour
 
         if (isUnlocked)
         {
-            SaveSystem.Data.selectedTankId = data.tankId.ToString();
-            SaveSystem.Save();
+            SaveSystem.SelectedTank = data.tankId;
             Debug.Log("Selected Tank: " + data.tankId);
         }
         else
@@ -271,7 +270,7 @@ public class TankShopUI : MonoBehaviour
             if (SaveSystem.Data.coins >= data.price)
             {
                 SaveSystem.Data.unlockedTankIds.Add(data.tankId.ToString());
-                SaveSystem.Data.selectedTankId = data.tankId.ToString();
+                SaveSystem.SelectedTank = data.tankId;
                 SaveSystem.ChangeCoins(-data.price);
                 Debug.Log("Purchased Tank: " + data.tankId);
             }

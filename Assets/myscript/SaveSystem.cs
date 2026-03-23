@@ -77,6 +77,22 @@ public static class SaveSystem
         OnCoinChanged?.Invoke();
     }
 
+    /// <summary>Truy cập tank đang chọn dưới dạng enum TankID</summary>
+    public static TankID SelectedTank
+    {
+        get
+        {
+            if (System.Enum.TryParse(Data.selectedTankId, out TankID id))
+                return id;
+            return TankID.DefaultTank;
+        }
+        set
+        {
+            Data.selectedTankId = value.ToString();
+            Save();
+        }
+    }
+
     static SaveSystem()
     {
         Data = new GameData();
