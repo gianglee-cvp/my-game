@@ -15,29 +15,37 @@ public class PlayerHealthBar : MonoBehaviour
     {
         if (hpSlider == null)
             hpSlider = GetComponent<Slider>();
-
-        if (playerHP == null)
-        {
-            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-            if (playerObj != null)
-            {
-                playerHP = playerObj.GetComponent<HP>();
-                if (playerHP == null)
-                    playerHP = playerObj.GetComponentInParent<HP>();
-                if (playerHP == null)
-                    playerHP = playerObj.GetComponentInChildren<HP>();
-            }
-        }
     }
 
     private void OnEnable()
     {
-        Bind();
+        TankSelector.OnPlayerTankSelected += OnPlayerTankSelected;
+        
+        // If player is already active, bind immediately
+        if (TankSelector.ActivePlayer != null)
+        {
+            OnPlayerTankSelected(TankSelector.ActivePlayer);
+        }
     }
 
     private void OnDisable()
     {
+        TankSelector.OnPlayerTankSelected -= OnPlayerTankSelected;
         Unbind();
+    }
+
+    private void OnPlayerTankSelected(GameObject playerObj)
+    {
+        Unbind(); // Clean up old reference
+
+        if (playerObj != null)
+        {
+            playerHP = playerObj.GetComponent<HP>();
+            if (playerHP == null) playerHP = playerObj.GetComponentInChildren<HP>();
+            if (playerHP == null) playerHP = playerObj.GetComponentInParent<HP>();
+
+            Bind();
+        }
     }
 
     private void Bind()

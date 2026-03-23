@@ -2526,8 +2526,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 625, y: 251}
-  m_SizeDelta: {x: 500, y: 50}
+  m_AnchoredPosition: {x: 688.214, y: 267}
+  m_SizeDelta: {x: 452.658, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &640767735
 GameObject:
@@ -5203,13 +5203,14 @@ MonoBehaviour:
     tankPrefab: {fileID: 1525630303}
     price: 50
   - tankId: 1
-    tankName: Giang Lee
-    description: abvc
+    tankName: 'Heavy Tank '
+    description: High durability tank with massive armor and powerful firepower,
+      but slow movement.
     tankPrefab: {fileID: 1200840730}
     price: 50
   - tankId: 2
-    tankName: Giang Lee
-    description: abvc
+    tankName: 'Speed Tank '
+    description: Fast and agile tank with quick attacks, but low durability.
     tankPrefab: {fileID: 1940997985630713120, guid: 05d264f8a7ce947c19d00877adb8cf37, type: 3}
     price: 200
   itemSlider: {fileID: 1994359687}
@@ -6930,7 +6931,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1644619076
 MonoBehaviour:
   m_ObjectHideFlags: 0

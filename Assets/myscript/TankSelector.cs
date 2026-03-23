@@ -10,6 +10,9 @@ public struct TankEntry
 
 public class TankSelector : MonoBehaviour
 {
+    public static System.Action<GameObject> OnPlayerTankSelected;
+    public static GameObject ActivePlayer { get; private set; }
+    
     public List<TankEntry> tanks = new List<TankEntry>();
 
     void Start()
@@ -28,6 +31,8 @@ public class TankSelector : MonoBehaviour
                 
                 if (isActive)
                 {
+                    ActivePlayer = tank.tankObject;
+                    OnPlayerTankSelected?.Invoke(ActivePlayer);
                     Debug.Log("[TankSelector] Activating " + tank.type);
                 }
             }
