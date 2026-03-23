@@ -26,6 +26,7 @@ public class bulletTank : MonoBehaviour
     public float fireCooldown = 1f;
     public float effectScale = 1f;
     public float lifetime = 10f;
+    public float damageMultiplier = 1f;
     private float destroyTime;
 
     [Header("Team")]
@@ -348,12 +349,12 @@ public class bulletTank : MonoBehaviour
                     }
                     else
                     {
-                        hp.TakeDamage(damage);
+                        hp.TakeDamage(damage * damageMultiplier);
                     }
                 }
                 else
                 {
-                    hp.TakeDamage(damage);
+                    hp.TakeDamage(damage * damageMultiplier);
                 }
             }
 

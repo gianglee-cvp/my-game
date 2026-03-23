@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using ProceduralForceField;
 
 
@@ -10,7 +10,11 @@ public class ControllerTank : MonoBehaviour
 
     public float Movespeed = 8f;
     public float RotateSpeed = 60f;
-    public float extraDownForce = 15f; // Giảm lực nhấn xuống để tránh bị dính chặt/giật
+    public float extraDownForce = 15f; // Giáº£m lá»±c nháº¥n xuá»‘ng Ä‘á»ƒ trÃ¡nh bá»‹ dÃnh cháº·t/giáº­t
+
+    [Header("Tank Identity & Upgrades")]
+    public TankID tankID;
+    private float damageMultiplier = 1f;
 
     Rigidbody TankEngine;
 
@@ -100,6 +104,28 @@ public class ControllerTank : MonoBehaviour
                 ProjectilePool.Prewarm(bulletPrefabs[i], prewarmPerBulletPrefab);
             }
         }
+
+        ApplyUpgrades();
+    }
+
+    private void ApplyUpgrades()
+    {
+        if (SaveSystem.Data == null) return;
+
+        // Láº¥y thÃ´ng tin upgrade cá»§a tank nÃ y
+        TankUpgradeData upgrade = SaveSystem.Data.GetUpgrade(tankID.ToString());
+        
+        // --- Táº¡m thá» i láº¥y thÃ´ng sá»‘ bonus tá»« TankUpgradeUI (hoáº·c fix cá»©ng náº¿u cáº§n) ---
+        // Má»—i cáº¥p HP: +25 HP, Má»—i cáº¥p Damage: +10%
+        float hpBonus = upgrade.hpLevel * 25f;
+        damageMultiplier = 1f + (upgrade.damageLevel * 0.10f);
+
+        if (playerHP != null)
+        {
+            playerHP.AddMaxHP(hpBonus);
+        }
+
+        Debug.Log($"[Upgrade Applied] Tank: {tankID}, HP Bonus: +{hpBonus}, Damage Mult: x{damageMultiplier}");
     }
 
     void OnEnable()
@@ -282,10 +308,11 @@ public class ControllerTank : MonoBehaviour
             shootElement.rotation
         );
 
-        // ðŸ”¥ Láº¥y cooldown tá»« bullet
+        // GÃ¡n Damage Multiplier cho Ä‘áº¡n
         bulletTank bulletScript = bulletInstance.GetComponentInChildren<bulletTank>();
         if (bulletScript != null)
         {
+            bulletScript.damageMultiplier = damageMultiplier;
             bulletScript.bulletTeam = Team.Player;
             float clampedBulletCooldown = Mathf.Min(
                 Mathf.Max(0.01f, bulletScript.fireCooldown),
@@ -352,6 +379,7 @@ public class ControllerTank : MonoBehaviour
         bulletTank bulletScript = bulletInstance.GetComponentInChildren<bulletTank>();
         if (bulletScript != null)
         {
+            bulletScript.damageMultiplier = damageMultiplier;
             bulletScript.bulletTeam = Team.Player;
             bulletScript.bulletType = BulletType.CurvedHoming; // Explicitly set type for special bullet
         }

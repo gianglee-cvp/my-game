@@ -20,6 +20,13 @@ public class HP : MonoBehaviour
         NotifyHealthChanged();
     }
 
+    public void AddMaxHP(float bonus)
+    {
+        maxHP += bonus;
+        currentHP += bonus; // Há»— trá»£ há»“i mÃ¡u khi tÄƒng max HP
+        NotifyHealthChanged();
+    }
+
     void OnEnable()
     {
         currentHP = maxHP;

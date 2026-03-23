@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections;
 
 /// <summary>
 /// Panel Upgrade — hỗ trợ upgrade HP và Damage riêng cho từng tank.
@@ -36,12 +37,29 @@ public class TankUpgradeUI : MonoBehaviour
     public TMP_Text damageCostText;    // "100 Coins"
     public Button   damageUpgradeButton;
 
+    [Header("Bar Fill Customization")]
+    [Tooltip("Danh sách % fill cho từng level HP (0 -> maxLevel). Ví dụ: Level 0 = 0, Level 1 = 0.3...")]
+    public float[] hpFillPerLevel;
+    [Tooltip("Danh sách % fill cho từng level Damage (0 -> maxLevel)")]
+    public float[] damageFillPerLevel;
+
+    [Header("Bar Fill Refs (Image Type = Filled, Method = Horizontal, Origin = Left)")]
+    [Tooltip("Kéo Image thanh HP bar xanh vào đây")]
+    public Image hpBarFill;
+    [Tooltip("Kéo Image thanh Damage bar vào đây")]
+    public Image damageBarFill;
+
+    [Tooltip("Thời gian animation fill (giây)")]
+    public float fillAnimDuration = 0.3f;
+
     [Header("Shared UI")]
     public TMP_Text coinText;
-    public TMP_Text tankNameText;      // Hiển thị tên tank đang upgrade (optional)
+    public TMP_Text tankNameText;      // Hiá»ƒn thá»‹ tÃªn tank Ä‘ang upgrade (optional)
 
-    // Tank đang được upgrade
-    private string currentTankId;
+    // Tank Ä‘ang Ä‘Æ°á»£c upgrade
+    private TankID currentTankId;
+    private Coroutine _hpFillCo;
+    private Coroutine _dmgFillCo;
 
     // ---------------------------------------------------------------
     void Start()
@@ -68,9 +86,9 @@ public class TankUpgradeUI : MonoBehaviour
     // ---------------------------------------------------------------
     /// <summary>
     /// Được gọi từ TankShopUI khi chuyển sang tab Upgrade hoặc khi đổi tank bằng slider.
-    /// Load dữ liệu upgrade của tank cụ thể và refresh UI.
+    /// Load dá»¯ liá»‡u upgrade cá»§a tank cá»¥ thá»ƒ vÃ  refresh UI.
     /// </summary>
-    public void LoadTank(string tankId)
+    public void LoadTank(TankID tankId)
     {
         currentTankId = tankId;
         Debug.Log($"[Upgrade] Loaded tank: {tankId}");
@@ -86,10 +104,10 @@ public class TankUpgradeUI : MonoBehaviour
     // ---------------------------------------------------------------
     public void RefreshUI()
     {
-        if (SaveSystem.Data == null || string.IsNullOrEmpty(currentTankId)) return;
+        if (SaveSystem.Data == null) return;
 
-        // Lấy upgrade data của tank hiện tại
-        TankUpgradeData upgrade = SaveSystem.Data.GetUpgrade(currentTankId);
+        // Láº¥y upgrade data cá»§a tank hiá»‡n táº¡i
+        TankUpgradeData upgrade = SaveSystem.Data.GetUpgrade(currentTankId.ToString());
         int coins       = SaveSystem.Data.coins;
         int hpLevel     = upgrade.hpLevel;
         int damageLevel = upgrade.damageLevel;
@@ -100,7 +118,7 @@ public class TankUpgradeUI : MonoBehaviour
 
         // ---- Tank Name (optional) ----
         if (tankNameText != null)
-            tankNameText.text = currentTankId;
+            tankNameText.text = currentTankId.ToString();
 
         // ---- HP ----
         if (hpLevelText != null)
@@ -120,6 +138,9 @@ public class TankUpgradeUI : MonoBehaviour
                 hpCostText.text = maxed ? "MAX" : $"{cost}";
         }
 
+        // ---- HP Bar Fill ----
+        UpdateBarFill(hpBarFill, hpLevel);
+
         // ---- Damage ----
         if (damageLevelText != null)
             damageLevelText.text = $"Level {damageLevel} / {maxUpgradeLevel}";
@@ -137,22 +158,32 @@ public class TankUpgradeUI : MonoBehaviour
             if (damageCostText != null)
                 damageCostText.text = maxed ? "MAX" : $"{cost}";
         }
+
+        // ---- Damage Bar Fill ----
+        UpdateBarFill(damageBarFill, damageLevel);
     }
 
     // ---------------------------------------------------------------
     /// <summary>Gọi khi nhấn nút Upgrade HP</summary>
     public void OnUpgradeHP()
     {
-        if (SaveSystem.Data == null || string.IsNullOrEmpty(currentTankId)) return;
+        if (SaveSystem.Data == null) return;
 
-        TankUpgradeData upgrade = SaveSystem.Data.GetUpgrade(currentTankId);
+        TankUpgradeData upgrade = SaveSystem.Data.GetUpgrade(currentTankId.ToString());
         if (upgrade.hpLevel >= maxUpgradeLevel) return;
 
         int cost = GetCostForLevel(upgrade.hpLevel);
         if (SaveSystem.Data.coins < cost) return;
 
+        // Lưu fill cũ để animate
+        float oldFill = hpBarFill != null ? hpBarFill.fillAmount : 0f;
+
         upgrade.hpLevel++;
-        SaveSystem.ChangeCoins(-cost); // Save + bắn event
+        SaveSystem.ChangeCoins(-cost); // Save + bắn event → RefreshUI đặt fill ngay
+
+        // Animate bar fill từ cũ sang mới
+        float newFill = GetFillForLevel(hpFillPerLevel, upgrade.hpLevel);
+        AnimateHpBar(oldFill, newFill);
 
         Debug.Log($"[Upgrade] Tank '{currentTankId}' HP lên cấp {upgrade.hpLevel}. Chi phí: {cost}");
     }
@@ -161,43 +192,79 @@ public class TankUpgradeUI : MonoBehaviour
     /// <summary>Gọi khi nhấn nút Upgrade Damage</summary>
     public void OnUpgradeDamage()
     {
-        if (SaveSystem.Data == null || string.IsNullOrEmpty(currentTankId)) return;
+        if (SaveSystem.Data == null) return;
 
-        TankUpgradeData upgrade = SaveSystem.Data.GetUpgrade(currentTankId);
+        TankUpgradeData upgrade = SaveSystem.Data.GetUpgrade(currentTankId.ToString());
         if (upgrade.damageLevel >= maxUpgradeLevel) return;
 
         int cost = GetCostForLevel(upgrade.damageLevel);
         if (SaveSystem.Data.coins < cost) return;
 
+        // Lưu fill cũ để animate
+        float oldFill = damageBarFill != null ? damageBarFill.fillAmount : 0f;
+
         upgrade.damageLevel++;
-        SaveSystem.ChangeCoins(-cost); // Save + bắn event
+        SaveSystem.ChangeCoins(-cost); // Save + bắn event → RefreshUI đặt fill ngay
 
-        Debug.Log($"[Upgrade] Tank '{currentTankId}' Damage lên cấp {upgrade.damageLevel}. Chi phí: {cost}");
+        // Animate bar fill từ cũ sang mới
+        float newFill = GetFillForLevel(damageFillPerLevel, upgrade.damageLevel);
+        AnimateDmgBar(oldFill, newFill);
+
+        Debug.Log($"[Upgrade] Tank '{currentTankId}' Damage lÃªn cáº¥p {upgrade.damageLevel}. Chi phÃ: {cost}");
     }
 
     // ---------------------------------------------------------------
-    // STATIC HELPERS — gọi từ gameplay scripts khi cần biết bonus
+    // BAR FILL HELPERS
     // ---------------------------------------------------------------
 
-    /// <summary>
-    /// Trả về tổng bonus HP của tank đang được chọn.
-    /// Gọi từ HP script khi spawn tank.
-    /// </summary>
-    public static float GetTotalHPBonus(float hpBonusPerLvl)
+    /// <summary>Đặt fill ngay lập tức (dùng trong RefreshUI)</summary>
+    private void UpdateBarFill(Image bar, int level)
     {
-        if (SaveSystem.Data == null) return 0f;
-        TankUpgradeData upgrade = SaveSystem.Data.GetUpgrade(SaveSystem.Data.selectedTankId);
-        return upgrade.hpLevel * hpBonusPerLvl;
+        if (bar == null) return;
+        
+        float targetFill = 0f;
+        if (bar == hpBarFill) targetFill = GetFillForLevel(hpFillPerLevel, level);
+        else if (bar == damageBarFill) targetFill = GetFillForLevel(damageFillPerLevel, level);
+        
+        bar.fillAmount = targetFill;
     }
 
-    /// <summary>
-    /// Trả về hệ số nhân Damage của tank đang được chọn (ví dụ 1.30 = +30%).
-    /// Gọi từ bulletTank khi tính damage.
-    /// </summary>
-    public static float GetDamageMultiplier(float damageBonusPerLvl)
+    private float GetFillForLevel(float[] fillArray, int level)
     {
-        if (SaveSystem.Data == null) return 1f;
-        TankUpgradeData upgrade = SaveSystem.Data.GetUpgrade(SaveSystem.Data.selectedTankId);
-        return 1f + upgrade.damageLevel * damageBonusPerLvl;
+        // Nếu mảng chưa được set hoặc không đủ phần tử -> dùng chia đều mặc định
+        if (fillArray == null || fillArray.Length <= level)
+        {
+            return (float)level / maxUpgradeLevel;
+        }
+        return fillArray[level];
+    }
+
+    /// <summary>Animate thanh HP bar từ fromFill đến toFill</summary>
+    private void AnimateHpBar(float from, float to)
+    {
+        if (hpBarFill == null) return;
+        if (_hpFillCo != null) StopCoroutine(_hpFillCo);
+        _hpFillCo = StartCoroutine(CoFillBar(hpBarFill, from, to));
+    }
+
+    /// <summary>Animate thanh Damage bar từ fromFill đến toFill</summary>
+    private void AnimateDmgBar(float from, float to)
+    {
+        if (damageBarFill == null) return;
+        if (_dmgFillCo != null) StopCoroutine(_dmgFillCo);
+        _dmgFillCo = StartCoroutine(CoFillBar(damageBarFill, from, to));
+    }
+
+    private IEnumerator CoFillBar(Image bar, float from, float to)
+    {
+        float elapsed = 0f;
+        while (elapsed < fillAnimDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.SmoothStep(0f, 1f, elapsed / fillAnimDuration);
+            bar.fillAmount = Mathf.Lerp(from, to, t);
+            yield return null;
+        }
+        bar.fillAmount = to;
     }
 }

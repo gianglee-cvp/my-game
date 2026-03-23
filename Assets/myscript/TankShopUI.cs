@@ -6,7 +6,7 @@ using System.Collections.Generic;
 [System.Serializable]
 public class TankShopData
 {
-    public string tankId;
+    public TankID tankId;
     public string tankName;
     [TextArea] public string description;
     public GameObject tankPrefab;
@@ -108,11 +108,11 @@ public class TankShopUI : MonoBehaviour
         // ---- Guard: Không cho vào Upgrade nếu tank chưa unlock ----
         if (isUpgrade && tankItems != null && currentIndex < tankItems.Count)
         {
-            string tankId = tankItems[currentIndex].tankId;
-            if (!SaveSystem.Data.IsTankUnlocked(tankId))
+            string idStr = tankItems[currentIndex].tankId.ToString();
+            if (!SaveSystem.Data.IsTankUnlocked(idStr))
             {
-                Debug.Log($"[Shop] Tank '{tankId}' chưa unlock — không cho vào Upgrade.");
-                isUpgrade = false; // Force về Shop
+                Debug.Log($"[Shop] Tank '{idStr}' chÆ°a unlock â€” khÃ´ng cho vÃ o Upgrade.");
+                isUpgrade = false; // Force vá» Shop
             }
         }
 
@@ -128,8 +128,8 @@ public class TankShopUI : MonoBehaviour
         // Nếu vào Upgrade → load đúng tank hiện tại
         if (isUpgrade && tankUpgradeUI != null)
         {
-            string tankId = tankItems[currentIndex].tankId;
-            tankUpgradeUI.LoadTank(tankId);
+            TankID id = tankItems[currentIndex].tankId;
+            tankUpgradeUI.LoadTank(id);
         }
 
         UpdateCoinUI();
@@ -144,18 +144,18 @@ public class TankShopUI : MonoBehaviour
         // ---- Xử lý tab khi đổi tank bằng slider ----
         if (isOnUpgradeTab)
         {
-            string tankId = tankItems[currentIndex].tankId;
+            TankID id = tankItems[currentIndex].tankId;
 
-            if (SaveSystem.Data.IsTankUnlocked(tankId))
+            if (SaveSystem.Data.IsTankUnlocked(id.ToString()))
             {
                 // Tank mới unlocked → giữ tab Upgrade, load data mới
                 if (tankUpgradeUI != null)
-                    tankUpgradeUI.LoadTank(tankId);
+                    tankUpgradeUI.LoadTank(id);
             }
             else
             {
-                // Tank mới locked → tự chuyển về tab Shop
-                Debug.Log($"[Shop] Đổi sang tank '{tankId}' (locked) — chuyển về tab Shop.");
+                // Tank má»›i locked â†’ tá»± chuyá»ƒn vá» tab Shop
+                Debug.Log($"[Shop] Ä á»•i sang tank '{id}' (locked) â€” chuyá»ƒn vá» tab Shop.");
                 ShowTab(false);
             }
         }
@@ -208,8 +208,8 @@ public class TankShopUI : MonoBehaviour
     {
         if (data == null || SaveSystem.Data == null || actionButton == null || actionButtonText == null) return;
 
-        bool isUnlocked = SaveSystem.Data.IsTankUnlocked(data.tankId);
-        bool isSelected = SaveSystem.Data.selectedTankId == data.tankId;
+        bool isUnlocked = SaveSystem.Data.IsTankUnlocked(data.tankId.ToString());
+        bool isSelected = SaveSystem.Data.selectedTankId == data.tankId.ToString();
 
         if (isSelected)
         {
@@ -258,11 +258,11 @@ public class TankShopUI : MonoBehaviour
     public void OnActionButtonClicked()
     {
         TankShopData data = tankItems[currentIndex];
-        bool isUnlocked = SaveSystem.Data.IsTankUnlocked(data.tankId);
+        bool isUnlocked = SaveSystem.Data.IsTankUnlocked(data.tankId.ToString());
 
         if (isUnlocked)
         {
-            SaveSystem.Data.selectedTankId = data.tankId;
+            SaveSystem.Data.selectedTankId = data.tankId.ToString();
             SaveSystem.Save();
             Debug.Log("Selected Tank: " + data.tankId);
         }
@@ -270,8 +270,8 @@ public class TankShopUI : MonoBehaviour
         {
             if (SaveSystem.Data.coins >= data.price)
             {
-                SaveSystem.Data.unlockedTankIds.Add(data.tankId);
-                SaveSystem.Data.selectedTankId = data.tankId;
+                SaveSystem.Data.unlockedTankIds.Add(data.tankId.ToString());
+                SaveSystem.Data.selectedTankId = data.tankId.ToString();
                 SaveSystem.ChangeCoins(-data.price);
                 Debug.Log("Purchased Tank: " + data.tankId);
             }
