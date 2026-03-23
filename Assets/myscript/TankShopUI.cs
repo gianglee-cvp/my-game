@@ -28,6 +28,8 @@ public class TankShopUI : MonoBehaviour
     public Button actionButton; 
     public TMP_Text actionButtonText;
     public Button backButton;
+    public Button leftButton;
+    public Button rightButton;
 
     [Header("Tab Navigation")]
     [Tooltip("Panel chứa nội dung mua xe tăng")]
@@ -63,6 +65,12 @@ public class TankShopUI : MonoBehaviour
 
         if (backButton != null)
             backButton.onClick.AddListener(GoBack);
+
+        if (leftButton != null)
+            leftButton.onClick.AddListener(OnLeftButtonClicked);
+
+        if (rightButton != null)
+            rightButton.onClick.AddListener(OnRightButtonClicked);
 
         // Mặc định hiện tab Shop
         ShowTab(false);
@@ -284,6 +292,41 @@ public class TankShopUI : MonoBehaviour
         if (GameManager.Instance != null)
         {
             GameManager.Instance.BackToMenu();
+        }
+    }
+
+    // ---------------------------------------------------------------
+    public void OnLeftButtonClicked()
+    {
+        if (currentIndex > 0)
+        {
+            currentIndex--;
+            if (itemSlider != null)
+            {
+                itemSlider.value = currentIndex;
+            }
+            else
+            {
+                // Nếu không có slider, vẫn phải update display
+                UpdateShopDisplay(currentIndex);
+            }
+        }
+    }
+
+    public void OnRightButtonClicked()
+    {
+        if (currentIndex < tankItems.Count - 1)
+        {
+            currentIndex++;
+            if (itemSlider != null)
+            {
+                itemSlider.value = currentIndex;
+            }
+            else
+            {
+                // Nếu không có slider, vẫn phải update display
+                UpdateShopDisplay(currentIndex);
+            }
         }
     }
 }
