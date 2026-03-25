@@ -54,7 +54,10 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        ChangeState(currentState);
+        // Force-fire the event for the initial state so listeners (AudioManager, etc.) sync up
+        ApplyState(currentState);
+        OnGameStateChanged?.Invoke(currentState);
+        Debug.Log("[GameManager] Initial State: " + currentState);
     }
 
     void Update()
@@ -90,8 +93,17 @@ public class GameManager : MonoBehaviour
         if (currentState == newState) return;
 
         currentState = newState;
+        ApplyState(currentState);
+        OnGameStateChanged?.Invoke(currentState);
+        Debug.Log("[GameManager] State Changed to: " + newState);
+    }
 
-        switch (currentState)
+    /// <summary>
+    /// Áp dụng các thay đổi phù hợp cho từng GameState (timeScale, cursor, panels…)
+    /// </summary>
+    private void ApplyState(GameState state)
+    {
+        switch (state)
         {
             case GameState.LevelSelect:
             case GameState.Shop:
@@ -121,10 +133,6 @@ public class GameManager : MonoBehaviour
                 Cursor.visible = true;
                 break;
         }
-
-        OnGameStateChanged?.Invoke(currentState);
-
-        Debug.Log("[GameManager] State Changed to: " + newState);
     }
 
     // ===== UI FUNCTIONS =====

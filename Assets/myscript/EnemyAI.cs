@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.AI;
 using System.Collections.Generic;
 
@@ -475,7 +475,7 @@ public class EnemyAI : MonoBehaviour
 
             if (player != null)
             {
-                bombScript.LaunchStraightAtPosition(player.position);
+                bombScript.LaunchAtTarget(player);
             }
 
             // âœ… Bá» qua collision giá»¯a bom vÃ  enemy Ä‘Ã£ drop nÃ³

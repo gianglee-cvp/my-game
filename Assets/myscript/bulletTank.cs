@@ -86,7 +86,7 @@ public class bulletTank : MonoBehaviour
         {
             effectScale = 3f;
         }
-
+        AudioManager.Instance.PlayShoot();
         LogDebug("position bullet: " + transform.position);
     }
 
@@ -282,7 +282,7 @@ public class bulletTank : MonoBehaviour
         bool hitPlayer = other.CompareTag("Player") || hitRoot.CompareTag("Player");
         bool hitEnemy = other.CompareTag("Enemy") || hitRoot.CompareTag("Enemy");
         bool hitBoss = other.CompareTag("Boss") || hitRoot.CompareTag("Boss");
-
+        AudioManager.Instance.PlayExplosion();
         // =============================
         // HIT SHIELD
         // =============================

@@ -76,6 +76,10 @@ public class Bomb : MonoBehaviour
 
         homingTarget = target;
         isHoming = true;
+
+        // Bật loop homing SFX
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.StartHomingLoop();
     }
 
     public void LaunchStraightAtPosition(Vector3 targetPos)
@@ -121,6 +125,7 @@ public class Bomb : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
+        AudioManager.Instance.PlayExplosion();
         HandleImpact(collision.gameObject, "Collision", true);
     }
 
@@ -136,7 +141,6 @@ public class Bomb : MonoBehaviour
 
         GameObject rootObj = hitObj.transform.root.gameObject;
         Debug.Log($"[{type}] Bomb hit: {hitObj.name} | Root: {rootObj.name} | Root Tag: {rootObj.tag}");
-
         bool hitPlayerOrShield =
             hitObj.CompareTag("Player") ||
             rootObj.CompareTag("Player") ||
@@ -162,6 +166,10 @@ public class Bomb : MonoBehaviour
             }
 
             isHoming = false;
+
+            // Tắt loop homing SFX khi bomb không còn homing
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.StopHomingLoop();
             if (rb != null)
             {
                 rb.linearVelocity = Vector3.zero;
@@ -272,6 +280,25 @@ public class Bomb : MonoBehaviour
             }
         }
 
+        // Tắt loop homing nếu bomb này đang homing
+        if (isHoming && AudioManager.Instance != null)
+            AudioManager.Instance.StopHomingLoop();
+
         Destroy(gameObject);
+    }
+
+    /// <summary>
+    /// Safety net cho pooling / despawn — đảm bảo loop homing luôn được tắt.
+    /// </summary>
+    private void OnDisable()
+    {
+        if (isHoming && AudioManager.Instance != null)
+            AudioManager.Instance.StopHomingLoop();
+
+        isHoming = false;
+        hasExploded = false;
+        isFuseStarted = false;
+        shakeOnExplode = false;
+        homingTarget = null;
     }
 }
