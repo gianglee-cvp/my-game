@@ -13,7 +13,9 @@ public class ControllerTank : MonoBehaviour
 
     public float Movespeed = 8f;
     public float RotateSpeed = 60f;
+    public float TowerRotateSpeed = 15f; // Tốc độ xoay tháp pháo (để mượt hơn)
     public float extraDownForce = 15f; // Giáº£m lá»±c nháº¥n xuá»‘ng Ä‘á»ƒ trÃ¡nh bá»‹ dÃnh cháº·t/giáº­t
+
 
     [Header("Tank Identity & Upgrades")]
     public TankID tankID;
@@ -23,8 +25,10 @@ public class ControllerTank : MonoBehaviour
 
     [Header("Input Actions - Kéo Action từ file .inputactions vào đây")]
     [SerializeField] private InputActionReference moveAction;
+    [SerializeField] private InputActionReference lookAction; // Joystick xoay tháp pháo
     [SerializeField] private InputActionReference fireAction;
     [SerializeField] private InputActionReference specialFireAction;
+
 
     private Vector2 moveInput;
 
@@ -146,6 +150,7 @@ public class ControllerTank : MonoBehaviour
     {
         // Kích hoạt các Action khi bật tank
         if (moveAction != null) moveAction.action.Enable();
+        if (lookAction != null) lookAction.action.Enable();
         if (fireAction != null) fireAction.action.Enable();
         if (specialFireAction != null) specialFireAction.action.Enable();
 
@@ -160,6 +165,7 @@ public class ControllerTank : MonoBehaviour
     {
         // Tắt các Action khi ẩn tank để tránh lỗi
         if (moveAction != null) moveAction.action.Disable();
+        if (lookAction != null) lookAction.action.Disable();
         if (fireAction != null) fireAction.action.Disable();
         if (specialFireAction != null) specialFireAction.action.Disable();
 
@@ -168,6 +174,7 @@ public class ControllerTank : MonoBehaviour
             playerHP.OnDied -= HandleDeath;
         }
     }
+
 
 
 
@@ -291,18 +298,28 @@ public class ControllerTank : MonoBehaviour
 
     void RotateTower()
     {
-        Ray ray = CameraFollow.ScreenPointToRay(Input.mousePosition);
-        Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
+        if (lookAction == null) return;
 
-        if (groundPlane.Raycast(ray, out float distance))
+        // Đọc giá trị Vector2 từ Joystick phải (Look Action)
+        Vector2 aimInput = lookAction.action.ReadValue<Vector2>();
+
+        // Chỉ xoay tháp pháo khi người chơi đang thực sự vuốt/gạt Joystick (vượt qua vùng chết)
+        if (aimInput.sqrMagnitude > 0.01f)
         {
-            Vector3 target = ray.GetPoint(distance);
-            Vector3 direction = target - transform.position;
+            // Tính góc đích đến
+            float targetAngle = Mathf.Atan2(aimInput.x, aimInput.y) * Mathf.Rad2Deg;
+            Quaternion targetRotation = Quaternion.Euler(0, targetAngle, 0);
 
-            float rotation = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
-            Tower.transform.rotation = Quaternion.Euler(0, rotation, 0);
+            // Xoay tháp pháo mượt mà (Slerp) về hướng targetAngle
+            Tower.transform.rotation = Quaternion.Slerp(
+                Tower.transform.rotation, 
+                targetRotation, 
+                Time.deltaTime * TowerRotateSpeed
+            );
         }
     }
+
+
 
     void Fire()
     {
