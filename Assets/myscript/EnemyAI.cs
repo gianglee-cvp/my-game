@@ -475,11 +475,11 @@ public class EnemyAI : MonoBehaviour
 
             if (player != null)
             {
-                bombScript.LaunchAtTarget(player);
+                bombScript.LaunchStraightAtPosition(player.position);
             }
 
-            // âœ… Bá» qua collision giá»¯a bom vÃ  enemy Ä‘Ã£ drop nÃ³
-            // â†’ TrÃ¡nh bom ná»• ngay khi vá»«a tÃ¡ch ra khá»i enemy
+            // âœ… Bá»  qua collision giá»¯a bom vÃ  enemy Ä‘Ã£ drop nÃ³
+            // â†’ TrÃ¡nh bom ná»• ngay khi vá»«a tÃ¡ch ra khá» i enemy
             Collider bombCol = bombObject.GetComponent<Collider>();
             Collider[] enemyCols = GetComponentsInChildren<Collider>();
             if (bombCol != null)

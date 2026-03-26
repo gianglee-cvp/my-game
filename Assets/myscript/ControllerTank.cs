@@ -1,5 +1,8 @@
 using UnityEngine;
 using ProceduralForceField;
+using UnityEngine.InputSystem;
+using UnityEngine.EventSystems; // Thêm để kiểm tra UI
+
 
 
 public class ControllerTank : MonoBehaviour
@@ -17,6 +20,15 @@ public class ControllerTank : MonoBehaviour
     private float damageMultiplier = 1f;
 
     Rigidbody TankEngine;
+
+    [Header("Input Actions - Kéo Action từ file .inputactions vào đây")]
+    [SerializeField] private InputActionReference moveAction;
+    [SerializeField] private InputActionReference fireAction;
+    [SerializeField] private InputActionReference specialFireAction;
+
+    private Vector2 moveInput;
+
+
 
     public GameObject Tower;
     public Camera CameraFollow;
@@ -74,6 +86,8 @@ public class ControllerTank : MonoBehaviour
         playerHP = GetComponent<HP>();
     }
 
+
+
     void Start()
     {
         ApplyGlobalScale();
@@ -130,6 +144,11 @@ public class ControllerTank : MonoBehaviour
 
     void OnEnable()
     {
+        // Kích hoạt các Action khi bật tank
+        if (moveAction != null) moveAction.action.Enable();
+        if (fireAction != null) fireAction.action.Enable();
+        if (specialFireAction != null) specialFireAction.action.Enable();
+
         ApplyGlobalScale();
         if (playerHP != null)
         {
@@ -139,11 +158,18 @@ public class ControllerTank : MonoBehaviour
 
     void OnDisable()
     {
+        // Tắt các Action khi ẩn tank để tránh lỗi
+        if (moveAction != null) moveAction.action.Disable();
+        if (fireAction != null) fireAction.action.Disable();
+        if (specialFireAction != null) specialFireAction.action.Disable();
+
         if (playerHP != null)
         {
             playerHP.OnDied -= HandleDeath;
         }
     }
+
+
 
     private void HandleDeath()
     {
@@ -223,16 +249,16 @@ public class ControllerTank : MonoBehaviour
 
     void Move()
     {
-        float v = Input.GetAxis("Vertical");
+        float v = moveInput.y; // GiÃ¡ trá»‹ tiáº¿n lÃ¹i (W/S hoáº·c Joystick lÃªn/xuá»‘ng)
         if (Mathf.Abs(v) < 0.01f) return;
 
-        // Chặn khi đi tới
+        // Cháº·n khi Ä‘i tá»›i
         if (v > 0 && IsWallAhead())
         {
             return;
         }
 
-        // Chặn khi lùi
+        // Cháº·n khi lÃ¹i
         if (v < 0 && IsWallBehind())
         {
             return;
@@ -247,20 +273,21 @@ public class ControllerTank : MonoBehaviour
         TankEngine.MovePosition(TankEngine.position + move);
     }
 
+
     void Rotate()
     {
-        float r = Input.GetAxis("Horizontal") *
-                  RotateSpeed *
-                  Time.fixedDeltaTime;
+        float r = moveInput.x; // GiÃ¡ trá»‹ xoay (A/D hoáº·c Joystick trÃ¡i/pháº£i)
+        if (Mathf.Abs(r) < 0.01f) return;
 
-        // Chỉ cho phép xoay quanh trục Y, ép X và Z về 0
+        float rotationAmount = r * RotateSpeed * Time.fixedDeltaTime;
         float currentY = transform.rotation.eulerAngles.y;
-        TankEngine.MoveRotation(Quaternion.Euler(0, currentY + r, 0));
+        TankEngine.MoveRotation(Quaternion.Euler(0, currentY + rotationAmount, 0));
         
-        // Triệt tiêu vận tốc góc X và Z để đảm bảo không bị lực lạ làm nghiêng xe
+        // Triá»‡t tiÃªu váº­n tá»‘c gÃ³c X vÃ  Z Ä‘á»ƒ Ä‘áº£m báº£o khÃ´ng bá»‹ lá»±c láº¡ lÃ m nghiÃªng xe
         Vector3 av = TankEngine.angularVelocity;
         TankEngine.angularVelocity = new Vector3(0, av.y, 0);
     }
+
 
     void RotateTower()
     {
@@ -279,8 +306,16 @@ public class ControllerTank : MonoBehaviour
 
     void Fire()
     {
-        if (!Input.GetMouseButton(0)) return;
+        // Kiểm tra lệnh bắn từ Action (đã kéo vào Inspector)
+        if (fireAction == null || !fireAction.action.IsPressed()) return;
+        
+        // Chặn tốc độ bắn
         if (Time.time < nextFireTime) return;
+
+        LogDebug("Player Fire - Đạn index: " + currentBulletIndex);
+
+
+
 
         // âœ… Kiá»ƒm tra máº£ng Ä‘áº¡n há»£p lá»‡
         if (bulletPrefabs == null || bulletPrefabs.Length == 0)
@@ -352,9 +387,17 @@ public class ControllerTank : MonoBehaviour
 
     void SpecialFire()
     {
-        if (!Input.GetKey(KeyCode.Space)) return;
+        // 1. Chặn nếu đang nhấn vào UI
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+            return;
+
+        // 2. Kiểm tra lệnh bắn đặc biệt (Dùng Action mới, fallback về phím Space)
+        bool isSpecialFiring = (specialFireAction != null) ? specialFireAction.action.IsPressed() : Input.GetKey(KeyCode.Space);
+
+        if (!isSpecialFiring) return;
         if (specialAmmoCount <= 0) return;
         if (Time.time < nextSpecialFireTime) return;
+
 
         if (bulletPrefabs == null || specialBulletIndex < 0 || specialBulletIndex >= bulletPrefabs.Length)
         {
@@ -390,7 +433,14 @@ public class ControllerTank : MonoBehaviour
         if (GameManager.Instance != null && GameManager.Instance.currentState != GameState.Playing)
             return;
 
+        // Đọc giá trị Vector2 từ Move Action (đã kéo vào Inspector)
+        if (moveAction != null)
+        {
+            moveInput = moveAction.action.ReadValue<Vector2>();
+        }
+
         UpdateStatusEffects();
+
         UpdateShield();
         
         // Luôn hiển thị tia Raycast để debug trong Scene view
