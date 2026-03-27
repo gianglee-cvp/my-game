@@ -97,6 +97,9 @@ public class ControllerTank : MonoBehaviour
     {
         ApplyGlobalScale();
 
+        // Cưỡng bức kích hoạt Action ngay khi Start (Phòng trường hợp OnEnable chạy trước khi gán Action)
+        EnableAllActions();
+
         TankEngine = GetComponent<Rigidbody>();
         if (shieldObject != null)
         {
@@ -150,11 +153,7 @@ public class ControllerTank : MonoBehaviour
     void OnEnable()
     {
         // Kích hoạt các Action khi bật tank
-        if (moveAction != null) moveAction.action.Enable();
-        if (lookAction != null) lookAction.action.Enable();
-        if (fireAction != null) fireAction.action.Enable();
-        if (specialFireAction != null) specialFireAction.action.Enable();
-        if (switchWeaponAction != null) switchWeaponAction.action.Enable();
+        EnableAllActions();
 
         ApplyGlobalScale();
         if (playerHP != null)
@@ -166,16 +165,33 @@ public class ControllerTank : MonoBehaviour
     void OnDisable()
     {
         // Tắt các Action khi ẩn tank để tránh lỗi
-        if (moveAction != null) moveAction.action.Disable();
-        if (lookAction != null) lookAction.action.Disable();
-        if (fireAction != null) fireAction.action.Disable();
-        if (specialFireAction != null) specialFireAction.action.Disable();
+        DisableAllActions();
 
         if (playerHP != null)
         {
             playerHP.OnDied -= HandleDeath;
         }
     }
+
+    private void EnableAllActions()
+    {
+        if (moveAction != null) moveAction.action.Enable();
+        if (lookAction != null) lookAction.action.Enable();
+        if (fireAction != null) fireAction.action.Enable();
+        if (specialFireAction != null) specialFireAction.action.Enable();
+        if (switchWeaponAction != null) switchWeaponAction.action.Enable();
+    }
+
+    private void DisableAllActions()
+    {
+        if (moveAction != null) moveAction.action.Disable();
+        if (lookAction != null) lookAction.action.Disable();
+        if (fireAction != null) fireAction.action.Disable();
+        if (specialFireAction != null) fireAction.action.Disable();
+        if (switchWeaponAction != null) switchWeaponAction.action.Disable();
+    }
+
+
 
 
 
@@ -469,11 +485,16 @@ public class ControllerTank : MonoBehaviour
         if (GameManager.Instance != null && GameManager.Instance.currentState != GameState.Playing)
             return;
 
-        // Đọc giá trị Vector2 từ Move Action (đã kéo vào Inspector)
+        // Đọc giá trị trái/phải, tiến/lùi từ Move Action
         if (moveAction != null)
         {
             moveInput = moveAction.action.ReadValue<Vector2>();
         }
+
+
+
+
+
 
         UpdateStatusEffects();
 

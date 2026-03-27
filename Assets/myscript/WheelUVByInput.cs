@@ -12,6 +12,12 @@ public class WheelUVByInput : MonoBehaviour
     private Renderer rend;
     private Material wheelMaterial;
 
+    void OnEnable()
+    {
+        // Kích hoạt action mỗi khi object được bật (đặc biệt quan trọng khi dùng TankSelector)
+        if (moveAction != null) moveAction.action.Enable();
+    }
+
     void Start()
     {
         rend = GetComponent<Renderer>();
@@ -19,13 +25,13 @@ public class WheelUVByInput : MonoBehaviour
         {
             wheelMaterial = rend.material;
         }
-
-        // Kích hoạt action nếu chưa được kích hoạt
-        if (moveAction != null) moveAction.action.Enable();
     }
 
     void Update()
     {
+        // Tự động bật lại nếu bị script khác tắt nhầm
+        if (moveAction != null && !moveAction.action.enabled) moveAction.action.Enable();
+
         // 1. Lấy dữ liệu từ Joystick (Trục Y của Vector2)
         float vertical = (moveAction != null) ? moveAction.action.ReadValue<Vector2>().y : Input.GetAxis("Vertical");
 

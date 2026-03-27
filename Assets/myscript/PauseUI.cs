@@ -6,30 +6,59 @@ public class PauseUI : MonoBehaviour
 
     void Start()
     {
-        GameManager.Instance.OnGameStateChanged += HandleGameState;
-        pausePanel.SetActive(false);
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.OnGameStateChanged += HandleGameState;
+        }
+        
+        if (pausePanel != null)
+            pausePanel.SetActive(false);
     }
+
     void HandleGameState(GameState state)
     {
         Debug.Log($"[PauseUI] Game State Changed: {state}");
         if (state == GameState.Paused)
         {
-            pausePanel.SetActive(true);
+            if (pausePanel != null) pausePanel.SetActive(true);
         }
         else
         {
-            pausePanel.SetActive(false);
+            if (pausePanel != null) pausePanel.SetActive(false);
         }
     }
+
+    public void PauseGame()
+    {
+        if (GameManager.Instance != null)
+            GameManager.Instance.PauseGame();
+    }
+
     public void ResumeGame()
     {
-        GameManager.Instance.ResumeGame();
+        if (GameManager.Instance != null)
+            GameManager.Instance.ResumeGame();
     }
+
+    public void TogglePause()
+    {
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.TogglePause();
+        }
+    }
+
+
     public void QuitToMainMenu()
     {
-        GameManager.Instance.BackToMenu();
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.BackToMenu();
+        }
+        
         GameObject mainpanel = GameObject.Find("MainMenuPanel");
-        if (mainpanel != null)        {
+        if (mainpanel != null)
+        {
             mainpanel.SetActive(true);
         }
     }
@@ -37,6 +66,10 @@ public class PauseUI : MonoBehaviour
     void OnDestroy()
     {
         if (GameManager.Instance != null)
+        {
             GameManager.Instance.OnGameStateChanged -= HandleGameState;
+        }
     }
+
+
 }

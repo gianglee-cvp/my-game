@@ -17,25 +17,30 @@ public class TankSelector : MonoBehaviour
 
     void Start()
     {
-        // 1. Get the selected tank enum from SaveSystem
         TankID selected = SaveSystem.SelectedTank;
-        Debug.Log("[TankSelector] Selected Tank: " + selected);
+        Debug.Log("[TankSelector] Start Selection for: " + selected);
         
-        // 2. Set active status for each tank in the list
+        // 1. Tắt tất cả các xe tăng trước (Đảm bảo các Disable() chạy hết)
         foreach (var tank in tanks)
         {
             if (tank.tankObject != null)
             {
-                bool isActive = (tank.type == selected);
-                tank.tankObject.SetActive(isActive);
-                
-                if (isActive)
-                {
-                    ActivePlayer = tank.tankObject;
-                    OnPlayerTankSelected?.Invoke(ActivePlayer);
-                    Debug.Log("[TankSelector] Activating " + tank.type);
-                }
+                tank.tankObject.SetActive(false);
+            }
+        }
+
+        // 2. Chỉ bật chiếc xe tăng đã được chọn (Để OnEnable() của xe này chạy cuối cùng)
+        foreach (var tank in tanks)
+        {
+            if (tank.tankObject != null && tank.type == selected)
+            {
+                tank.tankObject.SetActive(true);
+                ActivePlayer = tank.tankObject;
+                OnPlayerTankSelected?.Invoke(ActivePlayer);
+                Debug.Log("[TankSelector] Activating " + tank.type);
+                break; // Tìm thấy rồi thì thôi
             }
         }
     }
+
 }

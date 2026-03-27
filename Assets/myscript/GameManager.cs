@@ -62,15 +62,11 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-      //  Debug.Log("[GameManager] Current State: " + currentState);
         if (Input.GetKeyDown(KeyCode.C))
         {
-            Debug.Log("[GameManager] Current State: " + currentState);
-            if (currentState == GameState.Playing)
-                PauseGame();
-            else if (currentState == GameState.Paused)
-                ResumeGame();
+            TogglePause();
         }   
+
         // Tự động quản lý ẩn/hiện mọi Panel dựa trên GameState
         if (mainMenuPanel != null)
             mainMenuPanel.SetActive(currentState == GameState.MainMenu);
@@ -87,6 +83,16 @@ public class GameManager : MonoBehaviour
         if (victoryPanel != null)
             victoryPanel.SetActive(currentState == GameState.Victory);
     }
+
+    public void TogglePause()
+    {
+        Debug.Log("[GameManager] TogglePause called. Current State: " + currentState);
+        if (currentState == GameState.Playing)
+            PauseGame();
+        else if (currentState == GameState.Paused)
+            ResumeGame();
+    }
+
 
     public void ChangeState(GameState newState)
     {
