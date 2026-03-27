@@ -13,7 +13,7 @@ public class ControllerTank : MonoBehaviour
 
     public float Movespeed = 8f;
     public float RotateSpeed = 60f;
-    public float TowerRotateSpeed = 15f; // Tốc độ xoay tháp pháo (để mượt hơn)
+    public float TowerRotateSpeed = 10f; // Tốc độ xoay tháp pháo (để mượt hơn)
     public float extraDownForce = 15f; // Giáº£m lá»±c nháº¥n xuá»‘ng Ä‘á»ƒ trÃ¡nh bá»‹ dÃnh cháº·t/giáº­t
 
 
@@ -23,11 +23,12 @@ public class ControllerTank : MonoBehaviour
 
     Rigidbody TankEngine;
 
-    [Header("Input Actions - Kéo Action từ file .inputactions vào đây")]
-    [SerializeField] private InputActionReference moveAction;
-    [SerializeField] private InputActionReference lookAction; // Joystick xoay tháp pháo
-    [SerializeField] private InputActionReference fireAction;
-    [SerializeField] private InputActionReference specialFireAction;
+    [Header("Input Actions (Input System)")]
+    public UnityEngine.InputSystem.InputActionReference moveAction;
+    public UnityEngine.InputSystem.InputActionReference lookAction;
+    public UnityEngine.InputSystem.InputActionReference fireAction;
+    public UnityEngine.InputSystem.InputActionReference specialFireAction;
+    public UnityEngine.InputSystem.InputActionReference switchWeaponAction;
 
 
     private Vector2 moveInput;
@@ -153,6 +154,7 @@ public class ControllerTank : MonoBehaviour
         if (lookAction != null) lookAction.action.Enable();
         if (fireAction != null) fireAction.action.Enable();
         if (specialFireAction != null) specialFireAction.action.Enable();
+        if (switchWeaponAction != null) switchWeaponAction.action.Enable();
 
         ApplyGlobalScale();
         if (playerHP != null)
@@ -325,7 +327,7 @@ public class ControllerTank : MonoBehaviour
     {
         // Kiểm tra lệnh bắn từ Action (đã kéo vào Inspector)
         if (fireAction == null || !fireAction.action.IsPressed()) return;
-        
+        Debug.Log("Fire 1" + fireAction.action.IsPressed());
         // Chặn tốc độ bắn
         if (Time.time < nextFireTime) return;
 
@@ -386,6 +388,19 @@ public class ControllerTank : MonoBehaviour
         if (bulletPrefabs == null || bulletPrefabs.Length == 0)
             return;
 
+        // 1. Nhận từ nút bấm Mobile (hoặc phím tắt trên PC gán vào SwitchWeaponAction)
+        bool buttonPressed = (switchWeaponAction != null && switchWeaponAction.action.WasPressedThisFrame());
+        if (buttonPressed)
+        {
+            currentBulletIndex++;
+            if (currentBulletIndex >= bulletPrefabs.Length)
+                currentBulletIndex = 0;
+            
+            Debug.Log("[SwitchWeapon] Switched to bullet index: " + currentBulletIndex);
+            return; // Đã đổi xong bằng nút thì không check chuột nữa
+        }
+
+        // 2. Nhận từ cuộn chuột (PC fallback)
         float scroll = Input.GetAxis("Mouse ScrollWheel");
 
         if (scroll > 0f)
@@ -404,15 +419,18 @@ public class ControllerTank : MonoBehaviour
 
     void SpecialFire()
     {
-        // 1. Chặn nếu đang nhấn vào UI
-        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
-            return;
+        // 1. Chặn nếu đang nhấn vào UI (Bình luận lại để On-Screen Button hoạt động)
+        // if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+        //     return;
 
         // 2. Kiểm tra lệnh bắn đặc biệt (Dùng Action mới, fallback về phím Space)
+        if(specialFireAction != null) Debug.Log("SpecialFire Check: " + specialFireAction.action.IsPressed());
         bool isSpecialFiring = (specialFireAction != null) ? specialFireAction.action.IsPressed() : Input.GetKey(KeyCode.Space);
-
+        
         if (!isSpecialFiring) return;
+        Debug.Log("SpecialFire 4" );
         if (specialAmmoCount <= 0) return;
+        Debug.Log("SpecialFire 5");
         if (Time.time < nextSpecialFireTime) return;
 
 
@@ -421,27 +439,28 @@ public class ControllerTank : MonoBehaviour
             Debug.LogWarning("Index Ä‘áº¡n Ä‘áº·c biá»‡t khÃ´ng há»£p lá»‡: " + specialBulletIndex);
             return;
         }
-
+        Debug.Log("SpecialFire 6");
         specialAmmoCount--;
         nextSpecialFireTime = Time.time + specialFireCooldown;
-
+        Debug.Log("SpecialFire 7");
         for (int i = 0; i < ShootFX.Length; i++)
         {
-            ShootFX[i].Play();
+            ShootFX[i].Play();  
         }
-
+        Debug.Log("SpecialFire 8");
         GameObject bulletInstance = ProjectilePool.Spawn(
             bulletPrefabs[specialBulletIndex],
             shootElement.position,
             shootElement.rotation
         );
-
+        Debug.Log("SpecialFire 9");
         bulletTank bulletScript = bulletInstance.GetComponentInChildren<bulletTank>();
         if (bulletScript != null)
         {
             bulletScript.damageMultiplier = damageMultiplier;
             bulletScript.bulletTeam = Team.Player;
             bulletScript.bulletType = BulletType.CurvedHoming; // Explicitly set type for special bullet
+            Debug.Log("SpecialFire 10");
         }
     }
 

@@ -1,8 +1,14 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class WheelUVByInput : MonoBehaviour
 {
+    [Header("Settings")]
     public float scrollSpeed = 1f;
+    
+    [Header("Input (Mobile Support)")]
+    public InputActionReference moveAction;
+
     private Renderer rend;
     private Material wheelMaterial;
 
@@ -11,14 +17,19 @@ public class WheelUVByInput : MonoBehaviour
         rend = GetComponent<Renderer>();
         if (rend != null)
         {
-            // Cache material once to avoid repeated material instantiation checks per frame.
             wheelMaterial = rend.material;
         }
+
+        // Kích hoạt action nếu chưa được kích hoạt
+        if (moveAction != null) moveAction.action.Enable();
     }
 
     void Update()
     {
-        float vertical = Input.GetAxis("Vertical");
+        // 1. Lấy dữ liệu từ Joystick (Trục Y của Vector2)
+        float vertical = (moveAction != null) ? moveAction.action.ReadValue<Vector2>().y : Input.GetAxis("Vertical");
+
+        // 2. Nếu có chuyển động, cập nhật UV Offset cho xích xe
         if (wheelMaterial != null && Mathf.Abs(vertical) > 0.01f)
         {
             float offset = wheelMaterial.mainTextureOffset.y
