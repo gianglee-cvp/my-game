@@ -44,6 +44,8 @@ public class TankShopUI : MonoBehaviour
     [Header("3D Preview")]
     public Transform previewPoint;
     public float rotationSpeed = 50f;
+    [Tooltip("Tên Layer riêng cho preview (ví dụ: TankPreview). Để trống nếu không dùng RenderTexture.")]
+    public string previewLayerName = "TankPreview";
     private GameObject currentPreviewObject;
 
     private int currentIndex = 0;
@@ -192,15 +194,34 @@ public class TankShopUI : MonoBehaviour
 
             if (data.tankPrefab != null)
             {
-                currentPreviewObject = Instantiate(data.tankPrefab, previewPoint.position, previewPoint.rotation, previewPoint);
-                currentPreviewObject.SetActive(true); 
-                currentPreviewObject.transform.localScale = Vector3.one * 4f;
-                
-                MonoBehaviour[] scripts = currentPreviewObject.GetComponentsInChildren<MonoBehaviour>();
+                // Tắt prefab trước khi Instantiate để OnEnable không chạy sớm
+                data.tankPrefab.SetActive(false);
+                currentPreviewObject = Instantiate(data.tankPrefab, previewPoint);
+                data.tankPrefab.SetActive(true); // Trả lại prefab gốc
+
+                // Disable tất cả scripts trước khi bật object (tránh OnEnable ghi đè transform)
+                MonoBehaviour[] scripts = currentPreviewObject.GetComponentsInChildren<MonoBehaviour>(true);
                 foreach (var s in scripts)
                 {
                     if (s != null && s.GetType().Name != "ItemRotate") s.enabled = false;
                 }
+
+                // Ép transform chuẩn: luôn đúng bất kể resolution
+                currentPreviewObject.transform.localPosition = Vector3.zero;
+                currentPreviewObject.transform.localRotation = Quaternion.identity;
+                currentPreviewObject.transform.localScale = Vector3.one * 4f;
+
+                // Gán layer riêng cho preview (để PreviewCamera render, Main Camera bỏ qua)
+                if (!string.IsNullOrEmpty(previewLayerName))
+                {
+                    int layer = LayerMask.NameToLayer(previewLayerName);
+                    if (layer >= 0)
+                    {
+                        SetLayerRecursively(currentPreviewObject, layer);
+                    }
+                }
+
+                currentPreviewObject.SetActive(true);
             }
         }
 
@@ -327,6 +348,16 @@ public class TankShopUI : MonoBehaviour
                 // Nếu không có slider, vẫn phải update display
                 UpdateShopDisplay(currentIndex);
             }
+        }
+    }
+
+    // Gán layer cho tất cả children (recursive)
+    private void SetLayerRecursively(GameObject obj, int layer)
+    {
+        obj.layer = layer;
+        foreach (Transform child in obj.transform)
+        {
+            SetLayerRecursively(child.gameObject, layer);
         }
     }
 }

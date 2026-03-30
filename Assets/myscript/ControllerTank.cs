@@ -33,6 +33,12 @@ public class ControllerTank : MonoBehaviour
 
     private Vector2 moveInput;
 
+    // Turret aim drag tracking
+    [Header("Turret Aim (Touch Drag)")]
+    public float aimDragSensitivity = 0.15f; // Độ nhạy: bao nhiêu độ quay / pixel kéo
+    private int aimTouchId = -1;
+    private Vector2 lastAimTouchPos;
+
 
 
     public GameObject Tower;
@@ -308,64 +314,121 @@ public class ControllerTank : MonoBehaviour
         float currentY = transform.rotation.eulerAngles.y;
         TankEngine.MoveRotation(Quaternion.Euler(0, currentY + rotationAmount, 0));
         
-        // Triá»‡t tiÃªu váº­n tá»‘c gÃ³c X vÃ  Z Ä‘á»ƒ Ä‘áº£m báº£o khÃ´ng bá»‹ lá»±c láº¡ lÃ m nghiÃªng xe
+        // Triệt tiêu vận tốc góc X và Z để đảm bảo không bị lực lạ làm nghiêng xe
         Vector3 av = TankEngine.angularVelocity;
         TankEngine.angularVelocity = new Vector3(0, av.y, 0);
     }
 
-
-    void RotateTower()
+    void HandleAimAndFire()
     {
-        if (lookAction == null) return;
+        // ===== 1. XOAY THÁP PHÁO BẰNG DRAG (RELATIVE DELTA) =====
 
-        // Đọc giá trị Vector2 từ Joystick phải (Look Action)
-        Vector2 aimInput = lookAction.action.ReadValue<Vector2>();
+        bool aimHandledByTouch = false;
 
-        // Chỉ xoay tháp pháo khi người chơi đang thực sự vuốt/gạt Joystick (vượt qua vùng chết)
-        if (aimInput.sqrMagnitude > 0.01f)
+        if (Touchscreen.current != null)
         {
-            // Tính góc đích đến
-            float targetAngle = Mathf.Atan2(aimInput.x, aimInput.y) * Mathf.Rad2Deg;
-            Quaternion targetRotation = Quaternion.Euler(0, targetAngle, 0);
+            // Kiểm tra xem touch đang track có còn giữ không
+            bool currentAimTouchStillActive = false;
 
-            // Xoay tháp pháo mượt mà (Slerp) về hướng targetAngle
-            Tower.transform.rotation = Quaternion.Slerp(
-                Tower.transform.rotation, 
-                targetRotation, 
-                Time.deltaTime * TowerRotateSpeed
-            );
+            foreach (var touch in Touchscreen.current.touches)
+            {
+                int tid = touch.touchId.ReadValue();
+                var phase = touch.phase.ReadValue();
+                Vector2 pos = touch.position.ReadValue();
+
+                // --- Ngón tay mới chạm vào nửa phải ---
+                if (phase == UnityEngine.InputSystem.TouchPhase.Began && pos.x > Screen.width / 2f)
+                {
+                    // Lọc chạm vào UI
+                    if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject(tid))
+                        continue;
+
+                    // Bắt đầu track ngón tay này
+                    aimTouchId = tid;
+                    lastAimTouchPos = pos;
+                    aimHandledByTouch = true;
+                    currentAimTouchStillActive = true;
+                    continue;
+                }
+
+                // --- Ngón tay đang track, đang kéo ---
+                if (tid == aimTouchId)
+                {
+                    if (phase == UnityEngine.InputSystem.TouchPhase.Ended || phase == UnityEngine.InputSystem.TouchPhase.Canceled)
+                    {
+                        // Ngón tay nhấc lên → hủy track
+                        aimTouchId = -1;
+                        continue;
+                    }
+
+                    // Tính delta kéo
+                    Vector2 delta = pos - lastAimTouchPos;
+                    lastAimTouchPos = pos;
+
+                    // Kéo sang phải (delta.x > 0) → turret quay theo chiều dương Y
+                    // Kéo sang trái  (delta.x < 0) → turret quay theo chiều âm Y
+                    if (Mathf.Abs(delta.x) > 0.5f) // dead zone nhỏ tránh rung
+                    {
+                        float rotateAmount = delta.x * aimDragSensitivity;
+                        Tower.transform.Rotate(0, rotateAmount, 0, Space.World);
+                    }
+
+                    aimHandledByTouch = true;
+                    currentAimTouchStillActive = true;
+                }
+            }
+
+            // Nếu touch đang track đã biến mất (không tìm thấy trong danh sách), reset
+            if (aimTouchId >= 0 && !currentAimTouchStillActive)
+            {
+                aimTouchId = -1;
+            }
+        }
+
+        // 1b. Fallback Gamepad/PC: LookAction (Joystick phải / Mouse)
+        if (!aimHandledByTouch && lookAction != null)
+        {
+            Vector2 aimInput = lookAction.action.ReadValue<Vector2>();
+            if (aimInput.sqrMagnitude > 0.01f)
+            {
+                float targetAngle = Mathf.Atan2(aimInput.x, aimInput.y) * Mathf.Rad2Deg;
+                Quaternion targetRotation = Quaternion.Euler(0, targetAngle, 0);
+                Tower.transform.rotation = Quaternion.Slerp(
+                    Tower.transform.rotation, 
+                    targetRotation, 
+                    Time.deltaTime * TowerRotateSpeed
+                );
+            }
+        }
+
+        // ===== 2. BẮN CHỈ KHI GIỮ NÚT FIRE =====
+        if (fireAction != null && fireAction.action.IsPressed())
+        {
+            ExecuteFire();
         }
     }
 
-
-
-    void Fire()
+    void ExecuteFire()
     {
-        // Kiểm tra lệnh bắn từ Action (đã kéo vào Inspector)
-        if (fireAction == null || !fireAction.action.IsPressed()) return;
-        Debug.Log("Fire 1" + fireAction.action.IsPressed());
         // Chặn tốc độ bắn
         if (Time.time < nextFireTime) return;
 
         LogDebug("Player Fire - Đạn index: " + currentBulletIndex);
 
-
-
-
-        // âœ… Kiá»ƒm tra máº£ng Ä‘áº¡n há»£p lá»‡
+        // ✅ Kiểm tra mảng đạn hợp lệ
         if (bulletPrefabs == null || bulletPrefabs.Length == 0)
         {
-            Debug.LogWarning("ChÆ°a gÃ¡n bulletPrefabs!");
+            Debug.LogWarning("Chưa gán bulletPrefabs!");
             return;
         }
 
         if (currentBulletIndex < 0 || currentBulletIndex >= bulletPrefabs.Length)
         {
-            Debug.LogWarning("Index Ä‘áº¡n khÃ´ng há»£p lá»‡: " + currentBulletIndex);
+            Debug.LogWarning("Index đạn không hợp lệ: " + currentBulletIndex);
             return;
         }
 
-        LogDebug("Player Fire - Äáº¡n index: " + currentBulletIndex);
+        LogDebug("Player Fire - Đạn index: " + currentBulletIndex);
 
         for (int i = 0; i < ShootFX.Length; i++)
         {
@@ -378,7 +441,7 @@ public class ControllerTank : MonoBehaviour
             shootElement.rotation
         );
 
-        // GÃ¡n Damage Multiplier cho Ä‘áº¡n
+        // Gán Damage Multiplier cho đạn
         bulletTank bulletScript = bulletInstance.GetComponentInChildren<bulletTank>();
         if (bulletScript != null)
         {
@@ -504,8 +567,7 @@ public class ControllerTank : MonoBehaviour
         DrawDebugRays();
         
         // Input logic and non-physics updates
-        RotateTower();
-        Fire();
+        HandleAimAndFire();
         SpecialFire();
         SwitchWeapon();
     }
