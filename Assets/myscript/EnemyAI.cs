@@ -162,7 +162,23 @@ public class EnemyAI : MonoBehaviour
             return;
         }
 
-        if (player == null) return;
+        if (player == null || !player.gameObject.activeInHierarchy)
+        {
+            if (TankSelector.ActivePlayer != null)
+            {
+                player = TankSelector.ActivePlayer.transform;
+            }
+            else
+            {
+                GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+                if (playerObj != null && playerObj.activeInHierarchy)
+                {
+                    player = playerObj.transform;
+                }
+            }
+            
+            if (player == null || !player.gameObject.activeInHierarchy) return;
+        }
 
         if (isKnockedBack)
         {
@@ -229,7 +245,7 @@ public class EnemyAI : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (player == null) return;
+        if (player == null || !player.gameObject.activeInHierarchy) return;
 
         if (isKnockedBack)
         {

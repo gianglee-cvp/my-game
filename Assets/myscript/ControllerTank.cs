@@ -392,6 +392,11 @@ public class ControllerTank : MonoBehaviour
             if (aimInput.sqrMagnitude > 0.01f)
             {
                 float targetAngle = Mathf.Atan2(aimInput.x, aimInput.y) * Mathf.Rad2Deg;
+                
+                // Cộng thêm góc xoay hiện tại của xe tăng để hướng xoay của Joystick 
+                // luôn tương đối so với hướng mũi xe tăng
+                targetAngle += transform.eulerAngles.y;
+
                 Quaternion targetRotation = Quaternion.Euler(0, targetAngle, 0);
                 Tower.transform.rotation = Quaternion.Slerp(
                     Tower.transform.rotation, 

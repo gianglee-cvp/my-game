@@ -187,6 +187,25 @@ public class bulletTank : MonoBehaviour
 
     private void FindTarget()
     {
+        // 1. NẾU ĐẠN CỦA ENEMY -> Ưu tiên đuổi theo Player
+        if (bulletTeam == Team.Enemy)
+        {
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null)
+            {
+                HP playerHP = player.GetComponentInParent<HP>();
+                if (playerHP != null && playerHP.CurrentHP > 0)
+                {
+                    if (Vector3.Distance(transform.position, player.transform.position) <= targetSearchRange)
+                    {
+                        SetTarget(player.transform);
+                        return;
+                    }
+                }
+            }
+        }
+
+        // 2. NẾU ĐẠN CỦA PLAYER -> Tính ưu tiên Boss > Bomber > Shooter
         float closestBossDist = Mathf.Infinity;
         float closestBomberDist = Mathf.Infinity;
         float closestEnemyDist = Mathf.Infinity;
@@ -195,51 +214,69 @@ public class bulletTank : MonoBehaviour
         Transform bomberTarget = null;
         Transform enemyTarget = null;
 
-        EnemyAI[] enemies = Object.FindObjectsByType<EnemyAI>(FindObjectsSortMode.None);
+        // Quét TẤT CẢ các đối tượng có HP (Bao gồm cả Boss không dùng EnemyAI)
+        HP[] allHPs = Object.FindObjectsByType<HP>(FindObjectsSortMode.None);
 
-        foreach (var enemy in enemies)
+        foreach (var hpComponent in allHPs)
         {
-            if (enemy == null || !enemy.gameObject.activeInHierarchy) continue;
+            if (hpComponent == null || !hpComponent.gameObject.activeInHierarchy) continue;
+            if (hpComponent.CurrentHP <= 0) continue;
 
-            // Kiểm tra HP nếu có, bỏ qua nếu đã chết
-            HP enemyHP = enemy.GetComponent<HP>();
-            if (enemyHP != null && enemyHP.CurrentHP <= 0) continue;
+            // Bỏ qua nếu là Player (đạn Player thì không tự đuổi Player)
+            if (hpComponent.CompareTag("Player") || hpComponent.transform.root.CompareTag("Player")) continue;
 
-            float dist = Vector3.Distance(transform.position, enemy.transform.position);
+            float dist = Vector3.Distance(transform.position, hpComponent.transform.position);
 
             // Skip nếu ngoài range
             if (dist > targetSearchRange) continue;
 
-            // Boss (ưu tiên cao nhất)
-            if (enemy.CompareTag("Boss"))
+            // XÁC ĐỊNH LOẠI TARGET VÀ GÁN ƯU TIÊN
+            
+            // A. Boss (ưu tiên cao nhất - kiểm tra Tag hoặc Script)
+            if (hpComponent.CompareTag("Boss") || hpComponent.GetComponent<enemyboss1>() != null)
             {
                 if (dist < closestBossDist)
                 {
                     closestBossDist = dist;
-                    bossTarget = enemy.transform;
+                    bossTarget = hpComponent.transform;
                 }
             }
-            // Bomber
-            else if (enemy.type == EnemyAI.EnemyType.Bomber)
-            {
-                if (dist < closestBomberDist)
-                {
-                    closestBomberDist = dist;
-                    bomberTarget = enemy.transform;
-                }
-            }
-            // Enemy thường
+            // B. Bomber & Shooter
             else
             {
-                if (dist < closestEnemyDist)
+                EnemyAI enemy = hpComponent.GetComponent<EnemyAI>();
+                if (enemy != null)
                 {
-                    closestEnemyDist = dist;
-                    enemyTarget = enemy.transform;
+                    if (enemy.type == EnemyAI.EnemyType.Bomber)
+                    {
+                        if (dist < closestBomberDist)
+                        {
+                            closestBomberDist = dist;
+                            bomberTarget = hpComponent.transform;
+                        }
+                    }
+                    else // Shooter
+                    {
+                        if (dist < closestEnemyDist)
+                        {
+                            closestEnemyDist = dist;
+                            enemyTarget = hpComponent.transform;
+                        }
+                    }
+                }
+                // Fallback cho Enemy khác không có EnemyAI
+                else if (hpComponent.CompareTag("Enemy"))
+                {
+                    if (dist < closestEnemyDist)
+                    {
+                        closestEnemyDist = dist;
+                        enemyTarget = hpComponent.transform;
+                    }
                 }
             }
         }
 
-        // Ưu tiên
+        // Quyết định Target theo độ ưu tiên: Boss > Bomber > Shooter
         Transform selectedTarget = null;
         if (bossTarget != null)
             selectedTarget = bossTarget;

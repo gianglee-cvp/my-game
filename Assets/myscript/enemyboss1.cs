@@ -129,7 +129,27 @@ public class enemyboss1 : MonoBehaviour
 
     void Update()
     {
-        if (player == null || agent == null) return;
+        if (agent == null) return;
+
+        // Nếu Tank chưa được gán hoặc Tank cũ đã bị tắt (do Save System/TankSelector), tự động cập nhật lại Player
+        if (player == null || !player.gameObject.activeInHierarchy)
+        {
+            if (TankSelector.ActivePlayer != null)
+            {
+                player = TankSelector.ActivePlayer.transform;
+            }
+            else
+            {
+                GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+                if (playerObj != null && playerObj.activeInHierarchy)
+                {
+                    player = playerObj.transform;
+                }
+            }
+            
+            // Nếu vẫn chưa tìm thấy thì bỏ qua khung hình này
+            if (player == null || !player.gameObject.activeInHierarchy) return;
+        }
 
         if (isKnockedBack)
         {
