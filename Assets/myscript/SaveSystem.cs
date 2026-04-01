@@ -33,6 +33,7 @@ public class GameData
     public int coins = 999;
     public string selectedTankId = "DefaultTank";
     public List<string> unlockedTankIds = new List<string> { "DefaultTank" };
+    public bool useJoystickAim = false;
 
     // Upgrade data cho từng tank (thay thế hpUpgradeLevel / damageUpgradeLevel cũ)
     public List<TankUpgradeEntry> tankUpgradeEntries = new List<TankUpgradeEntry>();

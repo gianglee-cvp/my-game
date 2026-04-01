@@ -321,88 +321,92 @@ public class ControllerTank : MonoBehaviour
 
     void HandleAimAndFire()
     {
-        // ===== 1. XOAY THÁP PHÁO BẰNG DRAG (RELATIVE DELTA) =====
+        // ===== 1. XOAY THÁP PHÁO BẰNG DRAG HOẶC JOYSTICK =====
 
-        bool aimHandledByTouch = false;
+        bool useJoystickAim = SaveSystem.Data != null ? SaveSystem.Data.useJoystickAim : false;
 
-        if (Touchscreen.current != null)
+        if (!useJoystickAim)
         {
-            // Kiểm tra xem touch đang track có còn giữ không
-            bool currentAimTouchStillActive = false;
-
-            foreach (var touch in Touchscreen.current.touches)
+            // === CHẾ ĐỘ CHẠM VÀO MÀN HÌNH ĐỂ XOAY ===
+            if (Touchscreen.current != null)
             {
-                int tid = touch.touchId.ReadValue();
-                var phase = touch.phase.ReadValue();
-                Vector2 pos = touch.position.ReadValue();
+                // Kiểm tra xem touch đang track có còn giữ không
+                bool currentAimTouchStillActive = false;
 
-                // --- Ngón tay mới chạm vào nửa phải ---
-                if (phase == UnityEngine.InputSystem.TouchPhase.Began && pos.x > Screen.width / 2f)
+                foreach (var touch in Touchscreen.current.touches)
                 {
-                    // Lọc chạm vào UI
-                    if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject(tid))
-                        continue;
+                    int tid = touch.touchId.ReadValue();
+                    var phase = touch.phase.ReadValue();
+                    Vector2 pos = touch.position.ReadValue();
 
-                    // Bắt đầu track ngón tay này
-                    aimTouchId = tid;
-                    lastAimTouchPos = pos;
-                    aimHandledByTouch = true;
-                    currentAimTouchStillActive = true;
-                    continue;
-                }
-
-                // --- Ngón tay đang track, đang kéo ---
-                if (tid == aimTouchId)
-                {
-                    if (phase == UnityEngine.InputSystem.TouchPhase.Ended || phase == UnityEngine.InputSystem.TouchPhase.Canceled)
+                    // --- Ngón tay mới chạm vào nửa phải ---
+                    if (phase == UnityEngine.InputSystem.TouchPhase.Began && pos.x > Screen.width / 2f)
                     {
-                        // Ngón tay nhấc lên → hủy track
-                        aimTouchId = -1;
+                        // Lọc chạm vào UI
+                        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject(tid))
+                            continue;
+
+                        // Bắt đầu track ngón tay này
+                        aimTouchId = tid;
+                        lastAimTouchPos = pos;
+                        currentAimTouchStillActive = true;
                         continue;
                     }
 
-                    // Tính delta kéo
-                    Vector2 delta = pos - lastAimTouchPos;
-                    lastAimTouchPos = pos;
-
-                    // Kéo sang phải (delta.x > 0) → turret quay theo chiều dương Y
-                    // Kéo sang trái  (delta.x < 0) → turret quay theo chiều âm Y
-                    if (Mathf.Abs(delta.x) > 0.5f) // dead zone nhỏ tránh rung
+                    // --- Ngón tay đang track, đang kéo ---
+                    if (tid == aimTouchId)
                     {
-                        float rotateAmount = delta.x * aimDragSensitivity;
-                        Tower.transform.Rotate(0, rotateAmount, 0, Space.World);
+                        if (phase == UnityEngine.InputSystem.TouchPhase.Ended || phase == UnityEngine.InputSystem.TouchPhase.Canceled)
+                        {
+                            // Ngón tay nhấc lên → hủy track
+                            aimTouchId = -1;
+                            continue;
+                        }
+
+                        // Tính delta kéo
+                        Vector2 delta = pos - lastAimTouchPos;
+                        lastAimTouchPos = pos;
+
+                        // Kéo sang phải (delta.x > 0) → turret quay theo chiều dương Y
+                        // Kéo sang trái  (delta.x < 0) → turret quay theo chiều âm Y
+                        if (Mathf.Abs(delta.x) > 0.5f) // dead zone nhỏ tránh rung
+                        {
+                            float rotateAmount = delta.x * aimDragSensitivity;
+                            Tower.transform.Rotate(0, rotateAmount, 0, Space.World);
+                        }
+
+                        currentAimTouchStillActive = true;
                     }
-
-                    aimHandledByTouch = true;
-                    currentAimTouchStillActive = true;
                 }
-            }
 
-            // Nếu touch đang track đã biến mất (không tìm thấy trong danh sách), reset
-            if (aimTouchId >= 0 && !currentAimTouchStillActive)
-            {
-                aimTouchId = -1;
+                // Nếu touch đang track đã biến mất (không tìm thấy trong danh sách), reset
+                if (aimTouchId >= 0 && !currentAimTouchStillActive)
+                {
+                    aimTouchId = -1;
+                }
             }
         }
-
-        // 1b. Fallback Gamepad/PC: LookAction (Joystick phải / Mouse)
-        if (!aimHandledByTouch && lookAction != null)
+        else
         {
-            Vector2 aimInput = lookAction.action.ReadValue<Vector2>();
-            if (aimInput.sqrMagnitude > 0.01f)
+            // === CHẾ ĐỘ DÙNG JOYSTICK ĐỂ XOAY ===
+            if (lookAction != null)
             {
-                float targetAngle = Mathf.Atan2(aimInput.x, aimInput.y) * Mathf.Rad2Deg;
-                
-                // Cộng thêm góc xoay hiện tại của xe tăng để hướng xoay của Joystick 
-                // luôn tương đối so với hướng mũi xe tăng
-                targetAngle += transform.eulerAngles.y;
+                Vector2 aimInput = lookAction.action.ReadValue<Vector2>();
+                if (aimInput.sqrMagnitude > 0.01f)
+                {
+                    float targetAngle = Mathf.Atan2(aimInput.x, aimInput.y) * Mathf.Rad2Deg;
+                    
+                    // Cộng thêm góc xoay hiện tại của xe tăng để hướng xoay của Joystick 
+                    // luôn tương đối so với hướng mũi xe tăng
+                    targetAngle += transform.eulerAngles.y;
 
-                Quaternion targetRotation = Quaternion.Euler(0, targetAngle, 0);
-                Tower.transform.rotation = Quaternion.Slerp(
-                    Tower.transform.rotation, 
-                    targetRotation, 
-                    Time.deltaTime * TowerRotateSpeed
-                );
+                    Quaternion targetRotation = Quaternion.Euler(0, targetAngle, 0);
+                    Tower.transform.rotation = Quaternion.Slerp(
+                        Tower.transform.rotation, 
+                        targetRotation, 
+                        Time.deltaTime * TowerRotateSpeed
+                    );
+                }
             }
         }
 
