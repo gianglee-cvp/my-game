@@ -33,11 +33,8 @@ public class ControllerTank : MonoBehaviour
 
     private Vector2 moveInput;
 
-    // Turret aim drag tracking
-    [Header("Turret Aim (Touch Drag)")]
-    public float aimDragSensitivity = 0.15f; // Độ nhạy: bao nhiêu độ quay / pixel kéo
-    private int aimTouchId = -1;
-    private Vector2 lastAimTouchPos;
+    // Turret aim (Joystick always)
+    [Header("Turret Aim (Joystick)")]
 
 
 
@@ -321,96 +318,38 @@ public class ControllerTank : MonoBehaviour
 
     void HandleAimAndFire()
     {
-        // ===== 1. XOAY THÁP PHÁO BẰNG DRAG HOẶC JOYSTICK =====
+        // ===== 1. XOAY THÁP PHÁO BẰNG RIGHT JOYSTICK (luôn luôn) =====
+        bool isAiming = false;
 
-        bool useJoystickAim = SaveSystem.Data != null ? SaveSystem.Data.useJoystickAim : false;
-
-        if (!useJoystickAim)
+        if (lookAction != null)
         {
-            // === CHẾ ĐỘ CHẠM VÀO MÀN HÌNH ĐỂ XOAY ===
-            if (Touchscreen.current != null)
+            Vector2 aimInput = lookAction.action.ReadValue<Vector2>();
+            if (aimInput.sqrMagnitude > 0.01f)
             {
-                // Kiểm tra xem touch đang track có còn giữ không
-                bool currentAimTouchStillActive = false;
+                isAiming = true;
 
-                foreach (var touch in Touchscreen.current.touches)
-                {
-                    int tid = touch.touchId.ReadValue();
-                    var phase = touch.phase.ReadValue();
-                    Vector2 pos = touch.position.ReadValue();
+                float targetAngle = Mathf.Atan2(aimInput.x, aimInput.y) * Mathf.Rad2Deg;
 
-                    // --- Ngón tay mới chạm vào nửa phải ---
-                    if (phase == UnityEngine.InputSystem.TouchPhase.Began && pos.x > Screen.width / 2f)
-                    {
-                        // Lọc chạm vào UI
-                        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject(tid))
-                            continue;
+                // Cộng thêm góc xoay hiện tại của xe tăng để hướng xoay của Joystick
+                // luôn tương đối so với hướng mũi xe tăng
+                targetAngle += transform.eulerAngles.y;
 
-                        // Bắt đầu track ngón tay này
-                        aimTouchId = tid;
-                        lastAimTouchPos = pos;
-                        currentAimTouchStillActive = true;
-                        continue;
-                    }
-
-                    // --- Ngón tay đang track, đang kéo ---
-                    if (tid == aimTouchId)
-                    {
-                        if (phase == UnityEngine.InputSystem.TouchPhase.Ended || phase == UnityEngine.InputSystem.TouchPhase.Canceled)
-                        {
-                            // Ngón tay nhấc lên → hủy track
-                            aimTouchId = -1;
-                            continue;
-                        }
-
-                        // Tính delta kéo
-                        Vector2 delta = pos - lastAimTouchPos;
-                        lastAimTouchPos = pos;
-
-                        // Kéo sang phải (delta.x > 0) → turret quay theo chiều dương Y
-                        // Kéo sang trái  (delta.x < 0) → turret quay theo chiều âm Y
-                        if (Mathf.Abs(delta.x) > 0.5f) // dead zone nhỏ tránh rung
-                        {
-                            float rotateAmount = delta.x * aimDragSensitivity;
-                            Tower.transform.Rotate(0, rotateAmount, 0, Space.World);
-                        }
-
-                        currentAimTouchStillActive = true;
-                    }
-                }
-
-                // Nếu touch đang track đã biến mất (không tìm thấy trong danh sách), reset
-                if (aimTouchId >= 0 && !currentAimTouchStillActive)
-                {
-                    aimTouchId = -1;
-                }
-            }
-        }
-        else
-        {
-            // === CHẾ ĐỘ DÙNG JOYSTICK ĐỂ XOAY ===
-            if (lookAction != null)
-            {
-                Vector2 aimInput = lookAction.action.ReadValue<Vector2>();
-                if (aimInput.sqrMagnitude > 0.01f)
-                {
-                    float targetAngle = Mathf.Atan2(aimInput.x, aimInput.y) * Mathf.Rad2Deg;
-                    
-                    // Cộng thêm góc xoay hiện tại của xe tăng để hướng xoay của Joystick 
-                    // luôn tương đối so với hướng mũi xe tăng
-                    targetAngle += transform.eulerAngles.y;
-
-                    Quaternion targetRotation = Quaternion.Euler(0, targetAngle, 0);
-                    Tower.transform.rotation = Quaternion.Slerp(
-                        Tower.transform.rotation, 
-                        targetRotation, 
-                        Time.deltaTime * TowerRotateSpeed
-                    );
-                }
+                Quaternion targetRotation = Quaternion.Euler(0, targetAngle, 0);
+                Tower.transform.rotation = Quaternion.Slerp(
+                    Tower.transform.rotation,
+                    targetRotation,
+                    Time.deltaTime * TowerRotateSpeed
+                );
             }
         }
 
-        // ===== 2. BẮN CHỈ KHI GIỮ NÚT FIRE =====
+        // ===== 2. TỰ ĐỘNG BẮN KHI ĐANG KÉO JOYSTICK NGẮM =====
+        if (isAiming)
+        {
+            ExecuteFire();
+        }
+
+        // Vẫn giữ nút Fire riêng để bắn khi không kéo joystick (tuỳ chọn)
         if (fireAction != null && fireAction.action.IsPressed())
         {
             ExecuteFire();
